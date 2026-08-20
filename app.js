@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (Refactor Auth PIN)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (Rediseño Visual Premium WOW)
  * ==============================================================================
  * Sistema de inventario, topografía real y catalogación de biblioteca escolar.
  * Autenticación estricta por PIN individual, 17 zonas temáticas y Google Sheets.
@@ -350,16 +350,16 @@ function updateConnectionStatusIndicator(status) {
   if (!dot || !label) return;
 
   if (status === "connected") {
-    dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+    dot.className = "w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100";
     label.textContent = "Google Sheets";
   } else if (status === "syncing") {
-    dot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
+    dot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping ring-2 ring-amber-100";
     label.textContent = "Sincronizando...";
   } else if (status === "offline" || status === "demo") {
-    dot.className = "w-2 h-2 rounded-full bg-blue-500";
+    dot.className = "w-2 h-2 rounded-full bg-blue-500 ring-2 ring-blue-100";
     label.textContent = "Modo Local";
   } else {
-    dot.className = "w-2 h-2 rounded-full bg-rose-500";
+    dot.className = "w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-100";
     label.textContent = "Error Servidor";
   }
 }
@@ -502,7 +502,7 @@ function applyUserSession(user) {
     if (navSpaces) navSpaces.classList.remove("hidden");
     const navContainer = document.querySelector("nav > div");
     if (navContainer) {
-      navContainer.className = "max-w-md mx-auto grid grid-cols-4 gap-1";
+      navContainer.className = "max-w-md mx-auto grid grid-cols-4 gap-1.5";
     }
   }
 
@@ -551,9 +551,9 @@ function switchTab(tabId) {
     }
     if (navBtn) {
       if (t === tabId) {
-        navBtn.className = "flex flex-col items-center justify-center py-1.5 rounded-xl text-brand-600 font-semibold transition active:scale-95";
+        navBtn.className = "nav-tab-active flex flex-col items-center justify-center py-2 px-1 rounded-xl text-brand-700 transition active:scale-95";
       } else {
-        navBtn.className = "flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 hover:text-slate-800 font-medium transition active:scale-95";
+        navBtn.className = "flex flex-col items-center justify-center py-2 px-1 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition active:scale-95";
       }
     }
   });
@@ -814,71 +814,71 @@ function renderBookResult(book) {
     : createPlaceholderCoverSvg(book.Titulo, book.Autor);
 
   container.innerHTML = `
-    <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-200 scan-success-pulse space-y-4">
+    <div class="card-saas p-5 scan-success-pulse space-y-4 shadow-xl border-slate-200">
       
-      <!-- Topografía Física Destacada -->
-      <div class="bg-gradient-to-r from-brand-50 to-blue-50/70 p-4 rounded-xl border border-brand-200 space-y-2">
+      <!-- Topografía Física Destacada en Gradiente Cobalto / Índigo -->
+      <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white p-4 rounded-2xl shadow-lg shadow-blue-900/25 space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${zoneClass} border font-mono">
+          <span class="text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-full ${zoneClass} shadow-xs font-mono">
             ${cduZone}
           </span>
-          <span class="text-xs font-mono font-bold text-brand-800 bg-white px-2 py-0.5 rounded border border-brand-200 shadow-sm">
+          <span class="text-xs font-mono font-black text-slate-900 bg-white/95 px-2.5 py-1 rounded-lg border border-white/40 shadow-sm">
             ${shelfBarcode}
           </span>
         </div>
 
-        <div class="flex items-center gap-3 pt-1">
-          <div class="w-12 h-12 rounded-xl bg-brand-700 text-white flex items-center justify-center font-black text-xl shadow-md shadow-brand-700/20">
-            <i data-lucide="map-pin" class="w-6 h-6"></i>
+        <div class="flex items-center gap-3.5 pt-1">
+          <div class="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center font-black text-xl shadow-inner border border-white/20">
+            <i data-lucide="map-pin" class="w-6 h-6 text-amber-300"></i>
           </div>
           <div>
-            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Ubicación Física en Biblioteca:</p>
-            <h3 class="text-base font-black text-slate-900 leading-tight">
-              ${moduleNum} — <span class="text-brand-600">${shelfNum}</span>
+            <p class="text-[10px] text-blue-200 font-bold uppercase tracking-widest">Ubicación Física en Biblioteca:</p>
+            <h3 class="text-lg font-black text-white leading-tight mt-0.5">
+              ${moduleNum} — <span class="text-amber-300 underline decoration-amber-400/50 underline-offset-2">${shelfNum}</span>
             </h3>
           </div>
         </div>
       </div>
 
-      <!-- Ficha Bibliográfica -->
+      <!-- Ficha Bibliográfica SaaS -->
       <div class="flex gap-4 items-start pt-1">
-        <div class="w-24 h-32 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 shadow-sm relative">
+        <div class="w-24 h-32 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 shadow-md shadow-slate-900/10 relative">
           ${coverHtml}
         </div>
 
         <div class="flex-1 min-w-0 space-y-1.5">
           <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono">
+            <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono border border-emerald-200">
               ${book.Codigo_Interno}
             </span>
-            <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono border border-slate-200">
               ISBN: ${book.ISBN || "Sin ISBN"}
             </span>
           </div>
 
-          <h3 class="text-base font-bold text-slate-900 leading-snug">${book.Titulo}</h3>
-          <p class="text-xs text-slate-600 font-medium">${book.Autor}</p>
+          <h3 class="text-base font-black text-slate-900 leading-snug">${book.Titulo}</h3>
+          <p class="text-xs text-slate-700 font-semibold">${book.Autor}</p>
           <p class="text-[11px] text-slate-400">
             ${book.Editorial || "Editorial no especificada"} ${book.Ano ? `(${book.Ano})` : ""}
           </p>
 
           <div class="pt-1.5 text-[11px] text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>Último inventario: <strong>${formatDate(book.Fecha_Ultimo_Inventario)}</strong></span>
-            <span>Estado: <strong>${book.Estado || "Bueno"}</strong></span>
+            <span>Último inventario: <strong class="text-slate-700">${formatDate(book.Fecha_Ultimo_Inventario)}</strong></span>
+            <span>Estado: <strong class="text-emerald-700">${book.Estado || "Bueno"}</strong></span>
           </div>
         </div>
       </div>
 
       <!-- Acciones Rápidas -->
-      <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
         <button
           onclick="quickReassignShelf('${book.Codigo_Interno}')"
-          class="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 hover:underline"
+          class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 hover:underline active:scale-95 transition"
         >
           <i data-lucide="shuffle" class="w-3.5 h-3.5"></i>
           Cambiar de balda ahora
         </button>
-        <span class="text-[10px] text-slate-400">Registrado por: ${book.Registrado_Por || "Admin"}</span>
+        <span class="text-[10px] text-slate-400 font-medium">Registrado por: ${book.Registrado_Por || "Admin"}</span>
       </div>
 
     </div>
@@ -904,7 +904,7 @@ function renderDemoButtons() {
   container.innerHTML = "";
   AppState.books.slice(0, 4).forEach(b => {
     const btn = document.createElement("button");
-    btn.className = "px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-200";
+    btn.className = "px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200/90 shadow-2xs active:scale-95";
     btn.textContent = `${b.Codigo_Interno} (${b.Titulo.substring(0, 16)}...)`;
     btn.onclick = () => {
       const input = document.getElementById("locator-search-input");
@@ -946,7 +946,7 @@ function updateActiveShelfUI() {
     if (selectedBox) selectedBox.classList.add("hidden");
     if (scanSection) scanSection.classList.add("opacity-60", "pointer-events-none");
     if (statusPill) {
-      statusPill.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800";
+      statusPill.className = "text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200";
       statusPill.textContent = "Sin balda fijada";
     }
     return;
@@ -956,7 +956,7 @@ function updateActiveShelfUI() {
   if (selectedBox) selectedBox.classList.remove("hidden");
   if (scanSection) scanSection.classList.remove("opacity-60", "pointer-events-none");
   if (statusPill) {
-    statusPill.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+    statusPill.className = "text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200";
     statusPill.textContent = "Balda Fijada";
   }
 
@@ -1013,13 +1013,13 @@ function openSelectShelfModal() {
   container.innerHTML = "";
   AppState.spaces.forEach(s => {
     const item = document.createElement("button");
-    item.className = "w-full p-3 bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-xl flex items-center justify-between text-left transition";
+    item.className = "w-full p-3.5 bg-slate-50/80 hover:bg-brand-50/80 border border-slate-200 hover:border-brand-300 rounded-xl flex items-center justify-between text-left transition active:scale-98 shadow-2xs";
     item.innerHTML = `
       <div>
-        <p class="font-bold text-xs text-slate-800">${s.Modulo_Numero} — ${s.Balda_Numero}</p>
-        <p class="text-[11px] text-slate-500">${s.Zona_CDU}</p>
+        <p class="font-black text-xs text-slate-800">${s.Modulo_Numero} — ${s.Balda_Numero}</p>
+        <p class="text-[11px] text-slate-500 font-medium">${s.Zona_CDU}</p>
       </div>
-      <code class="text-xs font-mono font-bold bg-white px-2 py-1 rounded border border-slate-200 text-brand-700">
+      <code class="text-xs font-mono font-black bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-brand-700 shadow-xs">
         ${s.Codigo_Barras_Balda}
       </code>
     `;
@@ -1134,13 +1134,13 @@ function renderSessionAuditList() {
   container.innerHTML = "";
   AppState.sessionScannedBooks.forEach(item => {
     const card = document.createElement("div");
-    card.className = "p-2.5 rounded-xl border flex items-center justify-between text-xs transition " +
-      (item.status === "synced" ? "bg-white border-slate-200" : "bg-rose-50 border-rose-200");
+    card.className = "p-3 rounded-xl border flex items-center justify-between text-xs transition shadow-2xs " +
+      (item.status === "synced" ? "bg-white/95 border-slate-200" : "bg-rose-50/90 border-rose-200");
 
     if (item.book) {
       card.innerHTML = `
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-8 h-8 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0 shadow-2xs">
             <i data-lucide="check" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
@@ -1148,12 +1148,12 @@ function renderSessionAuditList() {
             <p class="text-[11px] text-slate-500 font-mono">${item.book.Codigo_Interno} • ${item.book.Autor}</p>
           </div>
         </div>
-        <span class="text-[10px] text-slate-400 font-mono flex-shrink-0">${item.timestamp.substring(11, 19)}</span>
+        <span class="text-[10px] text-slate-400 font-mono font-bold flex-shrink-0">${item.timestamp.substring(11, 19)}</span>
       `;
     } else {
       card.innerHTML = `
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-8 h-8 rounded bg-rose-100 text-rose-700 flex items-center justify-center font-bold flex-shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold flex-shrink-0 shadow-2xs">
             <i data-lucide="alert-triangle" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
@@ -1161,7 +1161,7 @@ function renderSessionAuditList() {
             <p class="text-[10px] text-rose-600">Requiere alta previa por Administrador</p>
           </div>
         </div>
-        <span class="text-[10px] text-rose-400 font-mono flex-shrink-0">${item.timestamp.substring(11, 19)}</span>
+        <span class="text-[10px] text-rose-400 font-mono font-bold flex-shrink-0">${item.timestamp.substring(11, 19)}</span>
       `;
     }
 
@@ -1192,7 +1192,7 @@ async function fetchMetadataByISBN(isbnQuery = null) {
   }
 
   if (statusEl) {
-    statusEl.innerHTML = '<span class="text-brand-600 font-semibold flex items-center gap-1"><i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Consultando OpenLibrary y Google Books...</span>';
+    statusEl.innerHTML = '<span class="text-brand-600 font-semibold flex items-center gap-1.5"><i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> Consultando OpenLibrary y Google Books...</span>';
     if (window.lucide) lucide.createIcons();
   }
 
@@ -1266,7 +1266,7 @@ async function fetchMetadataByISBN(isbnQuery = null) {
     feedback.doubleChime();
   } else {
     if (statusEl) {
-      statusEl.innerHTML = '<span class="text-amber-600">No se encontraron metadatos en línea. Rellena los datos manualmente o sube una foto.</span>';
+      statusEl.innerHTML = '<span class="text-amber-600 font-semibold">No se encontraron metadatos en línea. Rellena los datos manualmente o sube una foto.</span>';
     }
     showToast("ISBN no encontrado. Introduce los datos manualmente.", "info");
   }
@@ -1311,7 +1311,7 @@ function populateAddBookForm(data) {
   }
 
   if (statusEl) {
-    statusEl.innerHTML = `<span class="text-emerald-600 font-semibold flex items-center gap-1">✓ Metadatos recuperados de ${data.source}</span>`;
+    statusEl.innerHTML = `<span class="text-emerald-600 font-black flex items-center gap-1.5">✓ Metadatos recuperados de ${data.source}</span>`;
   }
 
   const internalInput = document.getElementById("add-book-internal-code");
@@ -1482,7 +1482,7 @@ function renderSpacesList() {
     const zoneClass = `zone-badge-${zoneCode}`;
 
     const card = document.createElement("div");
-    card.className = `p-3.5 bg-slate-50 hover:bg-white rounded-xl border ${isSelected ? 'border-brand-400 ring-1 ring-brand-300' : 'border-slate-200'} flex items-center justify-between transition gap-3`;
+    card.className = `p-3.5 bg-white hover:bg-slate-50/80 rounded-xl border ${isSelected ? 'border-brand-500 ring-2 ring-brand-200/70 shadow-xs' : 'border-slate-200'} flex items-center justify-between transition gap-3 shadow-2xs`;
 
     card.innerHTML = `
       <div class="flex items-center gap-3 min-w-0">
@@ -1494,18 +1494,18 @@ function renderSpacesList() {
         />
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <h4 class="font-bold text-sm text-slate-900">${space.Modulo_Numero} — ${space.Balda_Numero}</h4>
-            <span class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-600">${space.ID_Espacio}</span>
+            <h4 class="font-black text-sm text-slate-900">${space.Modulo_Numero} — ${space.Balda_Numero}</h4>
+            <span class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-600 font-bold">${space.ID_Espacio}</span>
           </div>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span class="text-[10px] px-2 py-0.5 rounded ${zoneClass} font-semibold">${space.Zona_CDU}</span>
-            <span class="text-[11px] text-slate-500 font-medium">${booksInSpace} libros</span>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-[10px] px-2 py-0.5 rounded ${zoneClass} font-bold shadow-2xs">${space.Zona_CDU}</span>
+            <span class="text-[11px] text-slate-500 font-bold">${booksInSpace} libros</span>
           </div>
         </div>
       </div>
 
       <div class="flex items-center gap-2 flex-shrink-0">
-        <code class="text-xs font-mono font-bold text-brand-700 bg-brand-50 px-2 py-1 rounded border border-brand-200">
+        <code class="text-xs font-mono font-black text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-200 shadow-2xs">
           ${space.Codigo_Barras_Balda}
         </code>
         <button
@@ -1962,10 +1962,10 @@ function showToast(message, type = "info") {
 
   const toast = document.createElement("div");
   const bgStyles = {
-    success: "bg-slate-900 text-white border-emerald-500/50",
-    error: "bg-rose-900 text-white border-rose-500/50",
-    warning: "bg-amber-900 text-white border-amber-500/50",
-    info: "bg-slate-900 text-white border-slate-700"
+    success: "bg-slate-900/95 text-white border-emerald-500/50 shadow-emerald-900/20",
+    error: "bg-rose-950/95 text-white border-rose-500/50 shadow-rose-900/20",
+    warning: "bg-amber-950/95 text-white border-amber-500/50 shadow-amber-900/20",
+    info: "bg-slate-900/95 text-white border-slate-700 shadow-slate-900/20"
   };
 
   const icons = {
@@ -1975,7 +1975,7 @@ function showToast(message, type = "info") {
     info: "ℹ"
   };
 
-  toast.className = `toast-animate px-4 py-2.5 rounded-2xl shadow-xl border text-xs font-semibold flex items-center gap-2.5 pointer-events-auto backdrop-blur-sm ${bgStyles[type] || bgStyles.info}`;
+  toast.className = `toast-animate px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-bold flex items-center gap-2.5 pointer-events-auto backdrop-blur-md ${bgStyles[type] || bgStyles.info}`;
   toast.innerHTML = `
     <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">${icons[type] || "•"}</span>
     <span>${message}</span>
