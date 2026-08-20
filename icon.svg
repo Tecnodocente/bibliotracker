@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Fondo Gradiente Índigo / Azul Real -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="50%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+
+    <!-- Resplandor del Láser Esmeralda -->
+    <linearGradient id="laserGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0" />
+      <stop offset="25%" stop-color="#34d399" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#6ee7b7" stop-opacity="1" />
+      <stop offset="75%" stop-color="#34d399" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Filtro de Sombra Suave -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.35" />
+    </filter>
+
+    <!-- Filtro de Brillo Láser -->
+    <filter id="glow" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Fondo Cuadrado con Bordes Redondeados (Optimizado para Maskable Icon) -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Círculo Central Sutil de Acento -->
+  <circle cx="256" cy="240" r="165" fill="#ffffff" fill-opacity="0.06" />
+
+  <!-- Grupo Principal Centrado con Sombra -->
+  <g filter="url(#dropShadow)">
+
+    <!-- Balda / Estantería Topográfica en la Base -->
+    <path d="M110 376 H402 C408 376 414 382 414 388 V396 C414 402 408 408 402 408 H110 C104 408 98 402 98 396 V388 C98 382 104 376 110 376 Z" fill="#94a3b8" fill-opacity="0.9" />
+    <!-- Soportes de la Balda -->
+    <rect x="136" y="408" width="16" height="14" rx="3" fill="#64748b" />
+    <rect x="360" y="408" width="16" height="14" rx="3" fill="#64748b" />
+
+    <!-- Libro Abierto Estilizado -->
+    <!-- Lomo Central -->
+    <path d="M256 160 V346" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round" />
+
+    <!-- Página Izquierda -->
+    <path d="M256 168 C210 144 140 148 126 156 C118 160 114 168 114 178 V332 C114 342 122 350 132 348 C152 344 212 342 256 360 Z" fill="#ffffff" />
+    <!-- Líneas de Texto Página Izquierda -->
+    <path d="M148 206 C176 200 216 202 236 210" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" />
+    <path d="M148 240 C176 234 216 236 236 244" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" />
+    <path d="M148 274 C176 268 216 270 236 278" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" />
+
+    <!-- Página Derecha -->
+    <path d="M256 168 C302 144 372 148 386 156 C394 160 398 168 398 178 V332 C398 342 390 350 380 348 C360 344 300 342 256 360 Z" fill="#f8fafc" />
+    <!-- Líneas de Texto Página Derecha -->
+    <path d="M276 210 C296 202 336 200 364 206" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" />
+    <path d="M276 244 C296 236 336 234 364 240" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" />
+    <path d="M276 278 C296 270 336 268 364 274" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" />
+
+    <!-- Cubierta Exterior del Libro (Bordes Inferiores en Azul Marino) -->
+    <path d="M112 336 C136 330 206 332 256 352 C306 332 376 330 400 336 V348 C376 342 306 344 256 366 C206 344 136 342 112 348 Z" fill="#1e293b" />
+  </g>
+
+  <!-- Haz Láser Esmeralda de Escaneo (Efecto Escáner Activo) -->
+  <g filter="url(#glow)">
+    <!-- Rayo Láser Horizontal -->
+    <rect x="76" y="248" width="360" height="6" rx="3" fill="url(#laserGrad)" />
+    <!-- Línea Central Blanca Brillante -->
+    <rect x="146" y="249.5" width="220" height="3" rx="1.5" fill="#ffffff" fill-opacity="0.9" />
+    <!-- Puntos de Destello en los Extremos -->
+    <circle cx="150" cy="251" r="5" fill="#34d399" />
+    <circle cx="362" cy="251" r="5" fill="#34d399" />
+  </g>
+
+  <!-- Mirilla / Esquinas de Escaneo Superiores -->
+  <path d="M96 150 V122 C96 114 102 108 110 108 H138" stroke="#34d399" stroke-width="8" stroke-linecap="round" />
+  <path d="M416 150 V122 C416 114 410 108 402 108 H374" stroke="#34d399" stroke-width="8" stroke-linecap="round" />
+  <!-- Mirilla / Esquinas Inferiores -->
+  <path d="M96 320 V344 C96 352 102 358 110 358 H138" stroke="#34d399" stroke-width="8" stroke-linecap="round" />
+  <path d="M416 320 V344 C416 352 410 358 402 358 H374" stroke="#34d399" stroke-width="8" stroke-linecap="round" />
+</svg>

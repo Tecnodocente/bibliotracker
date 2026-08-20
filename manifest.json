@@ -1,0 +1,19 @@
+{
+  "name": "BiblioTracker IES - Inventario y Topografía",
+  "short_name": "BiblioTracker",
+  "description": "Sistema PWA de inventario, localización física y catalogación rápida para bibliotecas escolares",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
