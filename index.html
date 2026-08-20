@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es" class="h-full overflow-x-hidden">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -63,25 +63,25 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
-<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-600 selection:text-white pb-24 lg:pb-8">
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-600 selection:text-white pb-24 lg:pb-8 overflow-x-hidden w-full">
 
   <!-- ========================================================================= -->
   <!-- BARRA SUPERIOR AZUL NOCHE / ÍNDIGO PROFUNDO (HEADER NIGHT) -->
   <!-- ========================================================================= -->
-  <header class="sticky top-0 z-30 header-night px-4 py-2.5 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
+  <header class="sticky top-0 z-30 header-night px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 w-full">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       
       <!-- Logotipo e Identidad -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-sky-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 p-2 ring-1 ring-white/30">
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-sky-400 flex items-center justify-center text-white shadow-md sm:shadow-lg shadow-indigo-500/25 p-1.5 ring-1 ring-white/30 flex-shrink-0">
           <img src="./icon.svg" alt="Logo" class="w-full h-full object-contain drop-shadow" />
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-black text-lg leading-tight tracking-tight text-white drop-shadow-xs">BiblioTracker</h1>
-            <span class="text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs">IES</span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-black text-sm sm:text-lg leading-tight tracking-tight text-white drop-shadow-xs truncate">BiblioTracker</h1>
+            <span class="text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs flex-shrink-0">IES</span>
           </div>
-          <p class="text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
+          <p class="hidden sm:block text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
       </div>
 
@@ -124,36 +124,37 @@
         </button>
       </nav>
 
-      <!-- Estado de Conexión, Usuario y Acciones -->
-      <div class="flex items-center gap-2">
+      <!-- Estado de Conexión, Usuario y Acciones (Colapsado elegante en móvil sin scroll horizontal) -->
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         
         <!-- Indicador de Servidor Google Apps Script -->
-        <button id="btn-status-indicator" onclick="openSettingsModal()" title="Estado de la conexión a Google Sheets" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold header-btn shadow-xs">
-          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40"></span>
-          <span id="status-label" class="hidden sm:inline text-[11px]">Modo Local</span>
+        <button id="btn-status-indicator" onclick="openSettingsModal()" title="Estado de la conexión a Google Sheets" class="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-full text-xs font-semibold header-btn shadow-xs">
+          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40 flex-shrink-0"></span>
+          <span id="status-label" class="hidden md:inline text-[11px]">Modo Local</span>
         </button>
 
-        <!-- Perfil de Profesor Activo -->
-        <div id="user-profile-badge" class="flex items-center gap-2 header-btn rounded-full py-1 pl-1.5 pr-3 shadow-xs">
-          <div id="user-avatar" class="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-slate-900 text-[11px] font-black flex items-center justify-center shadow-inner">
+        <!-- Perfil de Profesor Activo (Avatar circular en móvil para no desbordar) -->
+        <div id="user-profile-badge" class="flex items-center gap-1.5 sm:gap-2 header-btn rounded-full p-1 sm:py-1 sm:pl-1.5 sm:pr-3 shadow-xs">
+          <div id="user-avatar" class="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-slate-900 text-[11px] font-black flex items-center justify-center shadow-inner flex-shrink-0">
             P
           </div>
-          <div class="text-left">
+          <div class="hidden sm:block text-left">
             <p id="user-display-name" class="text-xs font-bold leading-none text-white truncate max-w-[90px] sm:max-w-[140px]">Profesor</p>
             <p id="user-role-badge" class="text-[9px] font-black leading-tight uppercase text-indigo-300">Admin</p>
           </div>
         </div>
 
-        <!-- Botón Ajustes -->
-        <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full flex items-center justify-center header-btn" title="Configuración y Servidor">
-          <i data-lucide="settings" class="w-4 h-4"></i>
+        <!-- Botón Ajustes (Siempre visible) -->
+        <button onclick="openSettingsModal()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center header-btn flex-shrink-0" title="Configuración y Servidor">
+          <i data-lucide="settings" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
         </button>
 
-        <!-- Botón Cerrar Sesión -->
-        <button onclick="confirmLogout()" class="w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition active:scale-95 shadow-xs" title="Cerrar Sesión">
-          <i data-lucide="log-out" class="w-4 h-4"></i>
+        <!-- Botón Cerrar Sesión (Siempre visible) -->
+        <button onclick="confirmLogout()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition active:scale-95 shadow-xs flex-shrink-0" title="Cerrar Sesión">
+          <i data-lucide="log-out" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
         </button>
       </div>
+
     </div>
   </header>
 
@@ -191,7 +192,7 @@
                 <input
                   type="text"
                   id="locator-search-input"
-                  placeholder="Escanea o escribe Código Séneca, ISBN o Título del libro..."
+                  placeholder="Escanea o escribe Código Séneca, ISBN o Título..."
                   class="w-full pl-10 pr-9 py-3.5 bg-slate-50/90 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition shadow-inner"
                   autocomplete="off"
                   onkeypress="if(event.key === 'Enter') handleLocatorSearch()"
@@ -208,18 +209,18 @@
               <!-- Botón de Escaneo con Cámara Gradient Primary -->
               <button
                 onclick="startScanner('locator')"
-                class="btn-primary-gradient px-5 py-3.5 font-bold text-sm rounded-xl flex items-center gap-2 transition"
+                class="btn-primary-gradient px-4 sm:px-5 py-3.5 font-bold text-sm rounded-xl flex items-center gap-2 transition flex-shrink-0"
                 title="Escanear con la cámara del dispositivo"
               >
                 <i data-lucide="scan-line" class="w-5 h-5"></i>
-                <span>Escanear</span>
+                <span class="hidden sm:inline">Escanear</span>
               </button>
             </div>
 
             <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
               <span class="flex items-center gap-1.5">
                 <i data-lucide="info" class="w-4 h-4 text-brand-600 flex-shrink-0"></i>
-                Busca por código de barras de la pegatina (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono font-bold">SEN-00101</code>) o ISBN comercial.
+                Busca por código de barras Séneca (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono font-bold">SEN-00101</code>) o ISBN comercial.
               </span>
               <button onclick="handleLocatorSearch()" class="font-bold text-brand-600 hover:text-brand-700 transition">Buscar ahora</button>
             </div>
@@ -231,7 +232,7 @@
           </div>
 
           <!-- Estado Vacío / Instrucciones -->
-          <div id="locator-empty-state" class="card-saas p-8 text-center border-dashed border-slate-300">
+          <div id="locator-empty-state" class="card-saas p-6 sm:p-8 text-center border-dashed border-slate-300">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-100 to-indigo-100 text-brand-700 flex items-center justify-center mx-auto mb-3 shadow-xs">
               <i data-lucide="compass" class="w-7 h-7"></i>
             </div>
@@ -418,7 +419,7 @@
 
               <button
                 onclick="startContinuousScanner()"
-                class="btn-emerald-gradient px-5 py-3.5 font-bold text-sm rounded-xl flex items-center gap-2 transition"
+                class="btn-emerald-gradient px-4 sm:px-5 py-3.5 font-bold text-sm rounded-xl flex items-center gap-2 transition flex-shrink-0"
                 title="Abrir cámara en modo ráfaga continua"
               >
                 <i data-lucide="video" class="w-5 h-5"></i>
@@ -506,7 +507,7 @@
                   <button
                     type="button"
                     onclick="startScanner('add-isbn')"
-                    class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 transition border border-slate-200 active:scale-97"
+                    class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 transition border border-slate-200 active:scale-97 flex-shrink-0"
                     title="Escanear ISBN comercial con la cámara"
                   >
                     <i data-lucide="scan-line" class="w-4 h-4"></i>
@@ -516,7 +517,7 @@
                     type="button"
                     id="btn-enrich-isbn"
                     onclick="fetchMetadataByISBN()"
-                    class="btn-primary-gradient px-4 py-2.5 font-bold text-xs rounded-xl flex items-center gap-1.5 transition"
+                    class="btn-primary-gradient px-4 py-2.5 font-bold text-xs rounded-xl flex items-center gap-1.5 transition flex-shrink-0"
                   >
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
                     <span>Autocompletar</span>
@@ -603,7 +604,7 @@
                     <button
                       type="button"
                       onclick="startScanner('add-internal')"
-                      class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 transition border border-slate-200 active:scale-97"
+                      class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 transition border border-slate-200 active:scale-97 flex-shrink-0"
                       title="Escanear Código Séneca"
                     >
                       <i data-lucide="scan-line" class="w-4 h-4"></i>
@@ -791,6 +792,67 @@
 
     </div>
   </nav>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: REUBICAR EJEMPLAR EN OTRA BALDA (VISUAL) -->
+  <!-- ========================================================================= -->
+  <div id="modal-reassign-shelf" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+          <i data-lucide="shuffle" class="w-5 h-5 text-brand-600"></i>
+          Reubicar Ejemplar de Balda
+        </h3>
+        <button onclick="closeReassignShelfModal()" class="text-slate-400 hover:text-slate-600 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+        <p id="reassign-book-title" class="text-sm font-black text-slate-900 line-clamp-1">Don Quijote de la Mancha</p>
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <span id="reassign-book-code" class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border text-emerald-700">SEN-00101</span>
+          <span>•</span>
+          <span id="reassign-current-location" class="text-slate-600 font-medium">Ubicación actual: Módulo 8 - Balda 1</span>
+        </div>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <label class="block font-black uppercase tracking-wider text-slate-700">
+          Selecciona la Nueva Balda Física:
+        </label>
+        <select
+          id="reassign-shelf-select"
+          class="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-brand-500 shadow-inner"
+        >
+          <!-- Rellenado dinámicamente con optgroup por cada zona CDU -->
+        </select>
+        <p class="text-[11px] text-slate-400">
+          El cambio se guardará automáticamente en Google Sheets y en el inventario local.
+        </p>
+      </div>
+
+      <input type="hidden" id="reassign-book-internal-code" />
+
+      <div class="flex gap-2 pt-2">
+        <button
+          type="button"
+          onclick="closeReassignShelfModal()"
+          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition active:scale-97"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onclick="handleSaveReassignShelf()"
+          class="btn-primary-gradient flex-1 py-3 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+        >
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Guardar Ubicación
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ========================================================================= -->
   <!-- MODAL: ESCÁNER DE CÁMARA (HTML5-QRCODE + LÁSER) -->

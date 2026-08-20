@@ -1,10 +1,13 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (Dashboard Responsive PC + Móvil)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (Fixes Críticos y Reubicación Visual)
  * ==============================================================================
  * Sistema de inventario, topografía real y catalogación de biblioteca escolar.
  * Autenticación estricta por PIN individual, 17 zonas temáticas y Google Sheets.
  */
+
+// URL por defecto preconfigurada (se mantiene la configurada en localStorage si existe)
+const DEFAULT_GAS_URL = "";
 
 // ==============================================================================
 // 1. TOPOGRAFÍA REAL DEL CENTRO EDUCATIVO (17 ZONAS TEMÁTICAS + DINÁMICAS)
@@ -122,7 +125,45 @@ const AppState = {
 };
 
 // ==============================================================================
-// 3. MOTOR DE AUDIO Y FEEDBACK HÁPTICO
+// 3. UTILIDADES DE ESCAPADO Y RENDERIZADO SEGURO
+// ==============================================================================
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderBookCoverMarkup(url, title, author) {
+  const cleanTitle = escapeHtml(title || "Libro");
+  const initials = escapeHtml(((title || "LB").substring(0, 2)).toUpperCase());
+
+  if (url && url.trim()) {
+    const cleanUrl = escapeHtml(url.trim());
+    return `
+      <div class="relative w-full h-full">
+        <img src="${cleanUrl}" alt="Portada" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
+        <div class="hidden book-cover-placeholder w-full h-full absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-black text-sm mb-1 text-white">${initials}</div>
+          <span class="text-[10px] font-bold leading-tight line-clamp-2 px-1 text-white">${cleanTitle}</span>
+        </div>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="book-cover-placeholder w-full h-full flex flex-col items-center justify-center p-2 text-center">
+        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-black text-sm mb-1 text-white">${initials}</div>
+        <span class="text-[10px] font-bold leading-tight line-clamp-2 px-1 text-white">${cleanTitle}</span>
+      </div>
+    `;
+  }
+}
+
+// ==============================================================================
+// 4. MOTOR DE AUDIO Y FEEDBACK HÁPTICO
 // ==============================================================================
 class FeedbackEngine {
   constructor() {
@@ -250,11 +291,15 @@ class FeedbackEngine {
 const feedback = new FeedbackEngine();
 
 // ==============================================================================
-// 4. PERSISTENCIA Y CLIENTE GOOGLE APPS SCRIPT
+// 5. PERSISTENCIA Y CLIENTE GOOGLE APPS SCRIPT
 // ==============================================================================
 function loadLocalState() {
   const savedUrl = localStorage.getItem("bibliotracker_gas_url");
-  if (savedUrl) AppState.gasUrl = savedUrl;
+  if (savedUrl && savedUrl.trim() !== "") {
+    AppState.gasUrl = savedUrl.trim();
+  } else if (DEFAULT_GAS_URL && DEFAULT_GAS_URL.trim() !== "") {
+    AppState.gasUrl = DEFAULT_GAS_URL.trim();
+  }
 
   const savedUsers = localStorage.getItem("bibliotracker_users");
   AppState.users = savedUsers ? JSON.parse(savedUsers) : [...DEFAULT_DEMO_DATA.users];
@@ -350,22 +395,22 @@ function updateConnectionStatusIndicator(status) {
   if (!dot || !label) return;
 
   if (status === "connected") {
-    dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/40";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/40 flex-shrink-0";
     label.textContent = "Google Sheets";
   } else if (status === "syncing") {
-    dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping ring-2 ring-amber-400/40";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping ring-2 ring-amber-400/40 flex-shrink-0";
     label.textContent = "Sincronizando...";
   } else if (status === "offline" || status === "demo") {
-    dot.className = "w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40 flex-shrink-0";
     label.textContent = "Modo Local";
   } else {
-    dot.className = "w-2.5 h-2.5 rounded-full bg-rose-400 ring-2 ring-rose-400/40";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-rose-400 ring-2 ring-rose-400/40 flex-shrink-0";
     label.textContent = "Error Servidor";
   }
 }
 
 // ==============================================================================
-// 5. AUTENTICACIÓN ESTRICTA POR PIN INDIVIDUAL
+// 6. AUTENTICACIÓN ESTRICTA POR PIN INDIVIDUAL
 // ==============================================================================
 function initAuth() {
   if (AppState.currentUser) {
@@ -526,7 +571,7 @@ function confirmLogout() {
 }
 
 // ==============================================================================
-// 6. NAVEGACIÓN POR PESTAÑAS (TABS RESPONSIVE)
+// 7. NAVEGACIÓN POR PESTAÑAS (TABS RESPONSIVE)
 // ==============================================================================
 function switchTab(tabId) {
   const tabs = ["locator", "inventory", "add-book", "spaces"];
@@ -592,7 +637,7 @@ function switchTab(tabId) {
 }
 
 // ==============================================================================
-// 7. CÁMARA Y ESCÁNER DE CÓDIGOS DE BARRAS
+// 8. CÁMARA Y ESCÁNER DE CÓDIGOS DE BARRAS
 // ==============================================================================
 function startScanner(context) {
   AppState.currentScannerContext = context;
@@ -764,7 +809,7 @@ function handleBarcodeScanned(code) {
 }
 
 // ==============================================================================
-// 8. MÓDULO 1: LOCALIZADOR DE LIBROS
+// 9. MÓDULO 1: LOCALIZADOR DE LIBROS
 // ==============================================================================
 function handleLocatorSearch(customQuery = null) {
   const input = document.getElementById("locator-search-input");
@@ -830,9 +875,7 @@ function renderBookResult(book) {
   const zoneCode = cduZone.split("—")[0].trim().split(" ")[0].trim();
   const zoneClass = `zone-badge-${zoneCode}`;
 
-  const coverHtml = book.URL_Portada
-    ? `<img src="${book.URL_Portada}" alt="Portada" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${createPlaceholderCoverSvg(book.Titulo, book.Autor)}';" />`
-    : createPlaceholderCoverSvg(book.Titulo, book.Autor);
+  const coverHtml = renderBookCoverMarkup(book.URL_Portada, book.Titulo, book.Autor);
 
   container.innerHTML = `
     <div class="card-saas p-5 sm:p-6 scan-success-pulse space-y-4 shadow-xl border-slate-200">
@@ -841,10 +884,10 @@ function renderBookResult(book) {
       <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-lg shadow-blue-900/30 space-y-3">
         <div class="flex items-center justify-between gap-2">
           <span class="text-[10px] sm:text-xs uppercase font-black tracking-wider px-3 py-1 rounded-full ${zoneClass} shadow-xs font-mono">
-            ${cduZone}
+            ${escapeHtml(cduZone)}
           </span>
           <span class="text-xs sm:text-sm font-mono font-black text-slate-900 bg-white/95 px-3 py-1 rounded-lg border border-white/40 shadow-sm">
-            ${shelfBarcode}
+            ${escapeHtml(shelfBarcode)}
           </span>
         </div>
 
@@ -855,7 +898,7 @@ function renderBookResult(book) {
           <div>
             <p class="text-[10px] sm:text-xs text-indigo-200 font-black uppercase tracking-widest">Ubicación Física en Biblioteca:</p>
             <h3 class="text-xl sm:text-2xl font-black text-white leading-tight mt-0.5">
-              ${moduleNum} — <span class="text-amber-300 underline decoration-amber-400/50 underline-offset-4">${shelfNum}</span>
+              ${escapeHtml(moduleNum)} — <span class="text-amber-300 underline decoration-amber-400/50 underline-offset-4">${escapeHtml(shelfNum)}</span>
             </h3>
           </div>
         </div>
@@ -870,22 +913,22 @@ function renderBookResult(book) {
         <div class="flex-1 min-w-0 space-y-2 text-center sm:text-left">
           <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
             <span class="text-xs font-black px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono border border-emerald-200">
-              ${book.Codigo_Interno}
+              ${escapeHtml(book.Codigo_Interno)}
             </span>
             <span class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono border border-slate-200">
-              ISBN: ${book.ISBN || "Sin ISBN"}
+              ISBN: ${escapeHtml(book.ISBN || "Sin ISBN")}
             </span>
           </div>
 
-          <h3 class="text-lg font-black text-slate-900 leading-snug">${book.Titulo}</h3>
-          <p class="text-sm text-slate-700 font-semibold">${book.Autor}</p>
+          <h3 class="text-lg font-black text-slate-900 leading-snug">${escapeHtml(book.Titulo)}</h3>
+          <p class="text-sm text-slate-700 font-semibold">${escapeHtml(book.Autor)}</p>
           <p class="text-xs text-slate-400">
-            ${book.Editorial || "Editorial no especificada"} ${book.Ano ? `(${book.Ano})` : ""}
+            ${escapeHtml(book.Editorial || "Editorial no especificada")} ${book.Ano ? `(${escapeHtml(book.Ano)})` : ""}
           </p>
 
           <div class="pt-2 text-xs text-slate-500 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 border-t border-slate-100">
             <span>Último inventario: <strong class="text-slate-700 font-bold">${formatDate(book.Fecha_Ultimo_Inventario)}</strong></span>
-            <span>Estado: <strong class="text-emerald-700 font-bold">${book.Estado || "Bueno"}</strong></span>
+            <span>Estado: <strong class="text-emerald-700 font-bold">${escapeHtml(book.Estado || "Bueno")}</strong></span>
           </div>
         </div>
       </div>
@@ -893,29 +936,19 @@ function renderBookResult(book) {
       <!-- Acciones Rápidas -->
       <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2">
         <button
-          onclick="quickReassignShelf('${book.Codigo_Interno}')"
+          onclick="openReassignShelfModal('${escapeHtml(book.Codigo_Interno)}')"
           class="text-xs font-black text-brand-600 hover:text-brand-700 flex items-center gap-1.5 hover:underline active:scale-95 transition"
         >
           <i data-lucide="shuffle" class="w-4 h-4"></i>
           Reubicar ejemplar en otra balda
         </button>
-        <span class="text-[11px] text-slate-400 font-medium">Registrado por: ${book.Registrado_Por || "Admin"}</span>
+        <span class="text-[11px] text-slate-400 font-medium">Registrado por: ${escapeHtml(book.Registrado_Por || "Admin")}</span>
       </div>
 
     </div>
   `;
 
   if (window.lucide) lucide.createIcons();
-}
-
-function createPlaceholderCoverSvg(title = "Libro", author = "") {
-  const initials = (title.substring(0, 2) || "LB").toUpperCase();
-  return `
-    <div class="book-cover-placeholder w-full h-full">
-      <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm mb-1">${initials}</div>
-      <span class="text-[10px] font-bold leading-tight line-clamp-2 px-1">${title}</span>
-    </div>
-  `;
 }
 
 function renderDemoButtons() {
@@ -937,7 +970,105 @@ function renderDemoButtons() {
 }
 
 // ==============================================================================
-// 9. MÓDULO 2: MODO INVENTARIO MASIVO CON PROGRESO Y CELEBRACIÓN
+// 10. REUBICACIÓN VISUAL DE BALDA (MODAL MODERNO)
+// ==============================================================================
+function openReassignShelfModal(codigoInterno) {
+  const book = AppState.books.find(b => b.Codigo_Interno === codigoInterno);
+  if (!book) {
+    showToast("Ejemplar no encontrado", "error");
+    return;
+  }
+
+  const modal = document.getElementById("modal-reassign-shelf");
+  const titleEl = document.getElementById("reassign-book-title");
+  const codeEl = document.getElementById("reassign-book-code");
+  const currentLocEl = document.getElementById("reassign-current-location");
+  const hiddenCodeInput = document.getElementById("reassign-book-internal-code");
+  const selectEl = document.getElementById("reassign-shelf-select");
+
+  if (!modal || !selectEl) return;
+
+  const currentSpace = AppState.spaces.find(s => s.ID_Espacio === book.ID_Espacio_Actual);
+  const currentDesc = currentSpace ? `${currentSpace.Modulo_Numero} - ${currentSpace.Balda_Numero} (${currentSpace.Zona_CDU})` : "Sin balda asignada";
+
+  if (titleEl) titleEl.textContent = book.Titulo;
+  if (codeEl) codeEl.textContent = book.Codigo_Interno;
+  if (currentLocEl) currentLocEl.textContent = `Actual: ${currentDesc}`;
+  if (hiddenCodeInput) hiddenCodeInput.value = book.Codigo_Interno;
+
+  // Poblar select agrupado por las 17 zonas CDU
+  selectEl.innerHTML = "";
+  const grouped = {};
+  AppState.spaces.forEach(s => {
+    if (!grouped[s.Zona_CDU]) grouped[s.Zona_CDU] = [];
+    grouped[s.Zona_CDU].push(s);
+  });
+
+  Object.keys(grouped).forEach(cdu => {
+    const optGroup = document.createElement("optgroup");
+    optGroup.label = cdu;
+    grouped[cdu].forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.ID_Espacio;
+      opt.textContent = `${s.Modulo_Numero} — ${s.Balda_Numero} (${s.Codigo_Barras_Balda})`;
+      if (book.ID_Espacio_Actual === s.ID_Espacio) {
+        opt.selected = true;
+      }
+      optGroup.appendChild(opt);
+    });
+    selectEl.appendChild(optGroup);
+  });
+
+  modal.classList.remove("hidden");
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeReassignShelfModal() {
+  const modal = document.getElementById("modal-reassign-shelf");
+  if (modal) modal.classList.add("hidden");
+}
+
+async function handleSaveReassignShelf() {
+  const hiddenCodeInput = document.getElementById("reassign-book-internal-code");
+  const selectEl = document.getElementById("reassign-shelf-select");
+
+  const codigoInterno = (hiddenCodeInput ? hiddenCodeInput.value : "").trim();
+  const newSpaceId = (selectEl ? selectEl.value : "").trim();
+
+  if (!codigoInterno || !newSpaceId) {
+    showToast("Por favor selecciona una balda válida", "warning");
+    return;
+  }
+
+  const book = AppState.books.find(b => b.Codigo_Interno === codigoInterno);
+  const matchedSpace = AppState.spaces.find(s => s.ID_Espacio === newSpaceId);
+
+  if (!book || !matchedSpace) {
+    showToast("Error al identificar el libro o la balda", "error");
+    return;
+  }
+
+  const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
+  book.ID_Espacio_Actual = matchedSpace.ID_Espacio;
+  book.Fecha_Ultimo_Inventario = nowStr;
+  saveLocalState();
+  feedback.doubleChime();
+
+  closeReassignShelfModal();
+  renderBookResult(book);
+  renderStats();
+  showToast(`✓ '${book.Titulo.substring(0, 20)}...' reubicado en ${matchedSpace.Modulo_Numero} - ${matchedSpace.Balda_Numero}`, "success");
+
+  callGAS("updateBookLocation", {
+    codigoInterno: book.Codigo_Interno,
+    idEspacio: matchedSpace.ID_Espacio,
+    fechaInventario: nowStr,
+    profesor: AppState.currentUser ? AppState.currentUser.Nombre_Profesor : "Admin"
+  }).catch(() => {});
+}
+
+// ==============================================================================
+// 11. MÓDULO 2: MODO INVENTARIO MASIVO CON PROGRESO Y CELEBRACIÓN
 // ==============================================================================
 function selectActiveShelfByCode(barcode) {
   const cleanCode = barcode.trim().toUpperCase();
@@ -1037,11 +1168,11 @@ function openSelectShelfModal() {
     item.className = "w-full p-3.5 bg-slate-50/80 hover:bg-brand-50/80 border border-slate-200 hover:border-brand-300 rounded-xl flex items-center justify-between text-left transition active:scale-98 shadow-2xs";
     item.innerHTML = `
       <div>
-        <p class="font-black text-xs text-slate-800">${s.Modulo_Numero} — ${s.Balda_Numero}</p>
-        <p class="text-[11px] text-slate-500 font-medium">${s.Zona_CDU}</p>
+        <p class="font-black text-xs text-slate-800">${escapeHtml(s.Modulo_Numero)} — ${escapeHtml(s.Balda_Numero)}</p>
+        <p class="text-[11px] text-slate-500 font-medium">${escapeHtml(s.Zona_CDU)}</p>
       </div>
       <code class="text-xs font-mono font-black bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-brand-700 shadow-xs">
-        ${s.Codigo_Barras_Balda}
+        ${escapeHtml(s.Codigo_Barras_Balda)}
       </code>
     `;
     item.onclick = () => {
@@ -1165,11 +1296,11 @@ function renderSessionAuditList() {
             <i data-lucide="check" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="font-bold text-slate-900 truncate">${item.book.Titulo}</p>
-            <p class="text-[11px] text-slate-500 font-mono">${item.book.Codigo_Interno} • ${item.book.Autor}</p>
+            <p class="font-bold text-slate-900 truncate">${escapeHtml(item.book.Titulo)}</p>
+            <p class="text-[11px] text-slate-500 font-mono">${escapeHtml(item.book.Codigo_Interno)} • ${escapeHtml(item.book.Autor)}</p>
           </div>
         </div>
-        <span class="text-[10px] text-slate-400 font-mono font-bold flex-shrink-0">${item.timestamp.substring(11, 19)}</span>
+        <span class="text-[10px] text-slate-400 font-mono font-bold flex-shrink-0">${escapeHtml(item.timestamp.substring(11, 19))}</span>
       `;
     } else {
       card.innerHTML = `
@@ -1178,11 +1309,11 @@ function renderSessionAuditList() {
             <i data-lucide="alert-triangle" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="font-bold text-rose-900 truncate">No registrado: ${item.unregisteredCode}</p>
+            <p class="font-bold text-rose-900 truncate">No registrado: ${escapeHtml(item.unregisteredCode)}</p>
             <p class="text-[10px] text-rose-600">Requiere alta previa por Administrador</p>
           </div>
         </div>
-        <span class="text-[10px] text-rose-400 font-mono font-bold flex-shrink-0">${item.timestamp.substring(11, 19)}</span>
+        <span class="text-[10px] text-rose-400 font-mono font-bold flex-shrink-0">${escapeHtml(item.timestamp.substring(11, 19))}</span>
       `;
     }
 
@@ -1200,7 +1331,7 @@ function clearSessionAuditHistory() {
 }
 
 // ==============================================================================
-// 10. MÓDULO 3: ALTA RÁPIDA Y MOTOR ESTRICTO DE CARÁTULAS
+// 12. MÓDULO 3: ALTA RÁPIDA Y MOTOR ESTRICTO DE CARÁTULAS
 // ==============================================================================
 async function fetchMetadataByISBN(isbnQuery = null) {
   const isbnInput = document.getElementById("add-book-isbn");
@@ -1324,15 +1455,11 @@ function populateAddBookForm(data) {
   if (coverUrlInput) coverUrlInput.value = data.coverUrl;
 
   if (coverPreview) {
-    if (data.coverUrl) {
-      coverPreview.innerHTML = `<img src="${data.coverUrl}" alt="Portada" class="w-full h-full object-cover" />`;
-    } else {
-      coverPreview.innerHTML = createPlaceholderCoverSvg(data.title, data.authors);
-    }
+    coverPreview.innerHTML = renderBookCoverMarkup(data.coverUrl, data.title, data.authors);
   }
 
   if (statusEl) {
-    statusEl.innerHTML = `<span class="text-emerald-600 font-black flex items-center gap-1.5">✓ Metadatos recuperados de ${data.source}</span>`;
+    statusEl.innerHTML = `<span class="text-emerald-600 font-black flex items-center gap-1.5">✓ Metadatos recuperados de ${escapeHtml(data.source)}</span>`;
   }
 
   const internalInput = document.getElementById("add-book-internal-code");
@@ -1368,11 +1495,7 @@ function promptCustomCover() {
     document.getElementById("add-book-cover-url").value = url;
     const coverPreview = document.getElementById("add-book-cover-preview");
     if (coverPreview) {
-      if (url.trim()) {
-        coverPreview.innerHTML = `<img src="${url}" alt="Portada" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='${createPlaceholderCoverSvg()}';" />`;
-      } else {
-        coverPreview.innerHTML = createPlaceholderCoverSvg();
-      }
+      coverPreview.innerHTML = renderBookCoverMarkup(url, document.getElementById("add-book-title").value, document.getElementById("add-book-author").value);
     }
   }
 }
@@ -1432,7 +1555,10 @@ async function handleCreateBook(event) {
   document.getElementById("form-add-book").reset();
   const coverPreview = document.getElementById("add-book-cover-preview");
   if (coverPreview) {
-    coverPreview.innerHTML = createPlaceholderCoverSvg();
+    coverPreview.innerHTML = `
+      <i data-lucide="image" class="w-10 h-10"></i>
+      <span class="text-xs mt-1.5 font-semibold">Sin portada</span>
+    `;
   }
   const statusEl = document.getElementById("isbn-enrich-status");
   if (statusEl) statusEl.innerHTML = "";
@@ -1442,7 +1568,7 @@ async function handleCreateBook(event) {
 }
 
 // ==============================================================================
-// 11. MÓDULO 4: TOPOGRAFÍA REAL Y GENERADOR DE ETIQUETAS PDF
+// 13. MÓDULO 4: TOPOGRAFÍA REAL Y GENERADOR DE ETIQUETAS PDF
 // ==============================================================================
 function populateZoneSelectors() {
   const filterSelect = document.getElementById("spaces-filter-cdu");
@@ -1510,16 +1636,16 @@ function renderSpacesList() {
         <input
           type="checkbox"
           ${isSelected ? "checked" : ""}
-          onchange="toggleSpaceSelection('${space.ID_Espacio}', this.checked)"
+          onchange="toggleSpaceSelection('${escapeHtml(space.ID_Espacio)}', this.checked)"
           class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 cursor-pointer"
         />
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <h4 class="font-black text-sm text-slate-900">${space.Modulo_Numero} — ${space.Balda_Numero}</h4>
-            <span class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-600 font-bold">${space.ID_Espacio}</span>
+            <h4 class="font-black text-sm text-slate-900">${escapeHtml(space.Modulo_Numero)} — ${escapeHtml(space.Balda_Numero)}</h4>
+            <span class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-600 font-bold">${escapeHtml(space.ID_Espacio)}</span>
           </div>
           <div class="flex items-center gap-2 mt-1">
-            <span class="text-[10px] px-2 py-0.5 rounded ${zoneClass} font-bold shadow-2xs">${space.Zona_CDU}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded ${zoneClass} font-bold shadow-2xs">${escapeHtml(space.Zona_CDU)}</span>
             <span class="text-[11px] text-slate-500 font-bold">${booksInSpace} libros</span>
           </div>
         </div>
@@ -1527,10 +1653,10 @@ function renderSpacesList() {
 
       <div class="flex items-center gap-2 flex-shrink-0">
         <code class="text-xs font-mono font-black text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-200 shadow-2xs">
-          ${space.Codigo_Barras_Balda}
+          ${escapeHtml(space.Codigo_Barras_Balda)}
         </code>
         <button
-          onclick="deleteSpace('${space.ID_Espacio}')"
+          onclick="deleteSpace('${escapeHtml(space.ID_Espacio)}')"
           class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
           title="Eliminar balda"
         >
@@ -1818,7 +1944,7 @@ function generateSelectedShelvesPDF() {
 }
 
 // ==============================================================================
-// 12. AJUSTES, ESTADÍSTICAS Y UTILIDADES
+// 14. AJUSTES, ESTADÍSTICAS Y UTILIDADES
 // ==============================================================================
 function renderStats() {
   const totalBooksEl = document.getElementById("stat-total-books");
@@ -1941,41 +2067,8 @@ function exportBackupJSON() {
   showToast("Copia de seguridad descargada", "success");
 }
 
-function quickReassignShelf(codigoInterno) {
-  const book = AppState.books.find(b => b.Codigo_Interno === codigoInterno);
-  if (!book) return;
-
-  const currentSpace = AppState.spaces.find(s => s.ID_Espacio === book.ID_Espacio_Actual);
-  const currentDesc = currentSpace ? `${currentSpace.Modulo_Numero} - ${currentSpace.Balda_Numero}` : "Ninguna";
-
-  const newSpaceBarcode = prompt(`Reubicar '${book.Titulo}' (Actual: ${currentDesc}).\nIntroduce el nuevo Código de Balda (ej. LOC-08-01):`, "");
-  if (newSpaceBarcode) {
-    const matchedSpace = AppState.spaces.find(
-      s => s.Codigo_Barras_Balda.toUpperCase() === newSpaceBarcode.trim().toUpperCase() || s.ID_Espacio.toUpperCase() === newSpaceBarcode.trim().toUpperCase()
-    );
-
-    if (matchedSpace) {
-      book.ID_Espacio_Actual = matchedSpace.ID_Espacio;
-      book.Fecha_Ultimo_Inventario = new Date().toISOString().replace("T", " ").substring(0, 19);
-      saveLocalState();
-      feedback.doubleChime();
-      renderBookResult(book);
-      showToast(`Reubicado en ${matchedSpace.Modulo_Numero} - ${matchedSpace.Balda_Numero}`, "success");
-      callGAS("updateBookLocation", {
-        codigoInterno: book.Codigo_Interno,
-        idEspacio: matchedSpace.ID_Espacio,
-        fechaInventario: book.Fecha_Ultimo_Inventario,
-        profesor: AppState.currentUser ? AppState.currentUser.Nombre_Profesor : "Admin"
-      }).catch(() => {});
-    } else {
-      feedback.beepError();
-      showToast(`No se encontró la balda con código '${newSpaceBarcode}'`, "error");
-    }
-  }
-}
-
 // ==============================================================================
-// 13. NOTIFICACIONES TOAST
+// 15. NOTIFICACIONES TOAST
 // ==============================================================================
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
@@ -1999,7 +2092,7 @@ function showToast(message, type = "info") {
   toast.className = `toast-animate px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-bold flex items-center gap-2.5 pointer-events-auto backdrop-blur-md ${bgStyles[type] || bgStyles.info}`;
   toast.innerHTML = `
     <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">${icons[type] || "•"}</span>
-    <span>${message}</span>
+    <span>${escapeHtml(message)}</span>
   `;
 
   container.appendChild(toast);
@@ -2013,7 +2106,7 @@ function showToast(message, type = "info") {
 }
 
 // ==============================================================================
-// 14. INICIALIZACIÓN
+// 16. INICIALIZACIÓN
 // ==============================================================================
 window.addEventListener("DOMContentLoaded", () => {
   loadLocalState();
