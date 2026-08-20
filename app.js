@@ -1,13 +1,13 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (Fixes Críticos y Reubicación Visual)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (Network-First & URL Embebida)
  * ==============================================================================
  * Sistema de inventario, topografía real y catalogación de biblioteca escolar.
  * Autenticación estricta por PIN individual, 17 zonas temáticas y Google Sheets.
  */
 
-// URL por defecto preconfigurada (se mantiene la configurada en localStorage si existe)
-const DEFAULT_GAS_URL = "";
+// URL real oficial del backend Google Apps Script del centro escolar
+const HARDCODED_GAS_URL = "https://script.google.com/macros/s/AKfycbwD4WmoyAnepRpu4Ei0gyAHw-HkEPzjOqmZKZxBu5L1Ex8hKN95IERz7tPqs--1_SJC/exec";
 
 // ==============================================================================
 // 1. TOPOGRAFÍA REAL DEL CENTRO EDUCATIVO (17 ZONAS TEMÁTICAS + DINÁMICAS)
@@ -295,10 +295,11 @@ const feedback = new FeedbackEngine();
 // ==============================================================================
 function loadLocalState() {
   const savedUrl = localStorage.getItem("bibliotracker_gas_url");
-  if (savedUrl && savedUrl.trim() !== "") {
+  if (!savedUrl || savedUrl.trim() === "" || savedUrl.includes("AKfyc...") || savedUrl.includes("AKfycbz_TU_URL_AQUI")) {
+    AppState.gasUrl = HARDCODED_GAS_URL;
+    localStorage.setItem("bibliotracker_gas_url", HARDCODED_GAS_URL);
+  } else {
     AppState.gasUrl = savedUrl.trim();
-  } else if (DEFAULT_GAS_URL && DEFAULT_GAS_URL.trim() !== "") {
-    AppState.gasUrl = DEFAULT_GAS_URL.trim();
   }
 
   const savedUsers = localStorage.getItem("bibliotracker_users");
@@ -1973,7 +1974,7 @@ function formatDate(dateStr) {
 function openSettingsModal() {
   const modal = document.getElementById("modal-settings");
   const input = document.getElementById("setting-gas-url");
-  if (input) input.value = AppState.gasUrl || "";
+  if (input) input.value = AppState.gasUrl || HARDCODED_GAS_URL;
   if (modal) modal.classList.remove("hidden");
 }
 
@@ -1984,7 +1985,7 @@ function closeSettingsModal() {
 
 function saveGasUrlOnly() {
   const input = document.getElementById("setting-gas-url");
-  const url = (input ? input.value : "").trim();
+  const url = (input ? input.value : "").trim() || HARDCODED_GAS_URL;
   AppState.gasUrl = url;
   localStorage.setItem("bibliotracker_gas_url", url);
   showToast("URL del servidor guardada", "success");
@@ -1995,12 +1996,7 @@ function saveGasUrlOnly() {
 async function testBackendConnection() {
   const input = document.getElementById("setting-gas-url");
   const resultDiv = document.getElementById("connection-test-result");
-  const url = (input ? input.value : "").trim();
-
-  if (!url) {
-    showToast("Introduce una URL de Web App de Google Apps Script", "warning");
-    return;
-  }
+  const url = (input ? input.value : "").trim() || HARDCODED_GAS_URL;
 
   AppState.gasUrl = url;
   localStorage.setItem("bibliotracker_gas_url", url);

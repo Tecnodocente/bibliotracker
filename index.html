@@ -1177,14 +1177,41 @@
   <!-- Script Principal de la Aplicación -->
   <script src="./app.js"></script>
 
-  <!-- Inicialización de iconos y Service Worker PWA -->
+  <!-- Inicialización de iconos y Service Worker PWA con Auto-Actualización -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(err => {
-          console.warn('PWA Service Worker offline sync activo:', err);
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            console.log('[PWA] Nueva versión activada. Recargando automáticamente...');
+            window.location.reload();
+          }
         });
+
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => {
+            console.log('[PWA] Service Worker registrado con éxito');
+            // Forzar búsqueda de versión fresca en cada arranque
+            reg.update();
+
+            reg.onupdatefound = () => {
+              const installingWorker = reg.installing;
+              if (installingWorker) {
+                installingWorker.onstatechange = () => {
+                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[PWA] Nueva versión lista, enviando skipWaiting');
+                    installingWorker.postMessage({ action: 'skipWaiting' });
+                  }
+                };
+              }
+            };
+          })
+          .catch((err) => {
+            console.warn('[PWA] Service Worker no registrado:', err);
+          });
       }
     });
   </script>
