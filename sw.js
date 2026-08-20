@@ -1,12 +1,12 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Service Worker V3.0.0 (Network-First Strategy)
+ * BIBLIOTRACKER IES - Service Worker V3.1.0 (Network-First Strategy)
  * ==============================================================================
  * Estrategia Network-First: Red primero con respaldo a caché offline.
  * Auto-actualización transparente, eliminación de cachés obsoletas y control instantáneo.
  */
 
-const CACHE_NAME = 'bibliotracker-v3.0.0';
+const CACHE_NAME = 'bibliotracker-v3.1.0';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-cacheados los assets estáticos esenciales v3.0.0');
+      console.log('[SW] Pre-cacheados los assets estáticos esenciales v3.1.0');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );

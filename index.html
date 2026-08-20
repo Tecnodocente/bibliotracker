@@ -71,7 +71,7 @@
   <header class="sticky top-0 z-30 header-night px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 w-full">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       
-      <!-- Logotipo e Identidad -->
+      <!-- Logotipo, Identidad y Etiqueta de Versión -->
       <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0">
         <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-sky-400 flex items-center justify-center text-white shadow-md sm:shadow-lg shadow-indigo-500/25 p-1.5 ring-1 ring-white/30 flex-shrink-0">
           <img src="./icon.svg" alt="Logo" class="w-full h-full object-contain drop-shadow" />
@@ -80,6 +80,7 @@
           <div class="flex items-center gap-1.5">
             <h1 class="font-black text-sm sm:text-lg leading-tight tracking-tight text-white drop-shadow-xs truncate">BiblioTracker</h1>
             <span class="text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs flex-shrink-0">IES</span>
+            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.1.0</span>
           </div>
           <p class="hidden sm:block text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
@@ -127,10 +128,10 @@
       <!-- Estado de Conexión, Usuario y Acciones (Colapsado elegante en móvil sin scroll horizontal) -->
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         
-        <!-- Indicador de Servidor Google Apps Script -->
-        <button id="btn-status-indicator" onclick="openSettingsModal()" title="Estado de la conexión a Google Sheets" class="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-full text-xs font-semibold header-btn shadow-xs">
-          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40 flex-shrink-0"></span>
-          <span id="status-label" class="hidden md:inline text-[11px]">Modo Local</span>
+        <!-- Indicador de Servidor Google Apps Script (Sincronización directa al pulsar) -->
+        <button id="btn-status-indicator" onclick="syncAllDataFromGAS()" title="Sincronizar ahora con Google Sheets" class="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-full text-xs font-semibold header-btn shadow-xs active:scale-95 transition cursor-pointer">
+          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/40 flex-shrink-0"></span>
+          <span id="status-label" class="hidden md:inline text-[11px]">Google Sheets</span>
         </button>
 
         <!-- Perfil de Profesor Activo (Avatar circular en móvil para no desbordar) -->
@@ -143,11 +144,6 @@
             <p id="user-role-badge" class="text-[9px] font-black leading-tight uppercase text-indigo-300">Admin</p>
           </div>
         </div>
-
-        <!-- Botón Ajustes (Siempre visible) -->
-        <button onclick="openSettingsModal()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center header-btn flex-shrink-0" title="Configuración y Servidor">
-          <i data-lucide="settings" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-        </button>
 
         <!-- Botón Cerrar Sesión (Siempre visible) -->
         <button onclick="confirmLogout()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition active:scale-95 shadow-xs flex-shrink-0" title="Cerrar Sesión">
@@ -244,7 +240,7 @@
 
         </div>
 
-        <!-- Columna Lateral: Métricas KPI, Accesos Rápidos e Información (4 columnas en PC) -->
+        <!-- Columna Lateral: Métricas KPI e Información (4 columnas en PC) -->
         <div class="lg:col-span-4 space-y-4">
           
           <!-- Bloque de Widgets KPI en Columna Vertical para PC -->
@@ -280,17 +276,6 @@
               </div>
             </div>
 
-          </div>
-
-          <!-- Tarjeta de Ejemplos y Pruebas Rápidas -->
-          <div class="card-saas p-4">
-            <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2.5 flex items-center gap-1.5">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
-              Prueba Rápida con Datos Demo:
-            </h3>
-            <div class="flex flex-wrap gap-2" id="quick-demo-buttons">
-              <!-- Rellenado por app.js -->
-            </div>
           </div>
 
           <!-- Tarjeta Informativa de Topografía -->

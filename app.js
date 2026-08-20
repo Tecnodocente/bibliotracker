@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (Network-First & URL Embebida)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.1.0 Producción)
  * ==============================================================================
  * Sistema de inventario, topografía real y catalogación de biblioteca escolar.
  * Autenticación estricta por PIN individual, 17 zonas temáticas y Google Sheets.
@@ -381,12 +381,15 @@ async function syncAllDataFromGAS() {
       populateZoneSelectors();
       populateShelfDropdowns();
       populateLoginUserSelect();
-      showToast("Datos sincronizados con Google Sheets", "success");
+      feedback.doubleChime();
+      showToast("Base de datos sincronizada con Google Sheets", "success");
     } else {
       updateConnectionStatusIndicator("error");
+      showToast("Error al procesar la respuesta del servidor", "error");
     }
   } catch (e) {
     updateConnectionStatusIndicator("offline");
+    showToast("Sin conexión con Google Sheets. Usando datos locales.", "warning");
   }
 }
 
@@ -559,7 +562,6 @@ function applyUserSession(user) {
   }
 
   renderStats();
-  renderDemoButtons();
 }
 
 function confirmLogout() {
@@ -950,24 +952,6 @@ function renderBookResult(book) {
   `;
 
   if (window.lucide) lucide.createIcons();
-}
-
-function renderDemoButtons() {
-  const container = document.getElementById("quick-demo-buttons");
-  if (!container) return;
-
-  container.innerHTML = "";
-  AppState.books.slice(0, 4).forEach(b => {
-    const btn = document.createElement("button");
-    btn.className = "px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200/90 shadow-2xs active:scale-95";
-    btn.textContent = `${b.Codigo_Interno} (${b.Titulo.substring(0, 16)}...)`;
-    btn.onclick = () => {
-      const input = document.getElementById("locator-search-input");
-      if (input) input.value = b.Codigo_Interno;
-      handleLocatorSearch(b.Codigo_Interno);
-    };
-    container.appendChild(btn);
-  });
 }
 
 // ==============================================================================
@@ -2038,7 +2022,6 @@ function resetToDemoData() {
     renderSpacesList();
     populateShelfDropdowns();
     populateLoginUserSelect();
-    renderDemoButtons();
     showToast("Datos demo restaurados", "info");
     closeSettingsModal();
   }
@@ -2111,7 +2094,6 @@ window.addEventListener("DOMContentLoaded", () => {
   populateShelfDropdowns();
   renderStats();
   renderSpacesList();
-  renderDemoButtons();
 
   if (AppState.gasUrl) {
     syncAllDataFromGAS();
