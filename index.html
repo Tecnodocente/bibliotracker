@@ -6,7 +6,7 @@
   <title>BiblioTracker IES - Inventario y Topografía</title>
 
   <!-- Metadatos PWA y Móvil -->
-  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="theme-color" content="#0f172a" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -59,59 +59,98 @@
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-  <!-- Estilos Visuales Premium -->
+  <!-- Estilos Visuales Premium Dashboard -->
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
-<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-600 selection:text-white pb-24">
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-600 selection:text-white pb-24 lg:pb-8">
 
   <!-- ========================================================================= -->
-  <!-- BARRA SUPERIOR (HEADER FROSTED GLASS) -->
+  <!-- BARRA SUPERIOR AZUL NOCHE / ÍNDIGO PROFUNDO (HEADER NIGHT) -->
   <!-- ========================================================================= -->
-  <header class="sticky top-0 z-30 glass-header px-4 py-2.5">
-    <div class="max-w-4xl mx-auto flex items-center justify-between">
+  <header class="sticky top-0 z-30 header-night px-4 py-2.5 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
       
       <!-- Logotipo e Identidad -->
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-900 via-brand-700 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-900/25 p-1.5 ring-1 ring-white/20">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-sky-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 p-2 ring-1 ring-white/30">
           <img src="./icon.svg" alt="Logo" class="w-full h-full object-contain drop-shadow" />
         </div>
         <div>
-          <div class="flex items-center gap-1.5">
-            <h1 class="font-black text-base leading-tight tracking-tight text-slate-900">BiblioTracker</h1>
-            <span class="text-[9px] uppercase font-black tracking-widest px-1.5 py-0.5 rounded-full bg-brand-100/80 text-brand-800 border border-brand-200/60 shadow-xs">IES</span>
+          <div class="flex items-center gap-2">
+            <h1 class="font-black text-lg leading-tight tracking-tight text-white drop-shadow-xs">BiblioTracker</h1>
+            <span class="text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs">IES</span>
           </div>
-          <p class="text-[10px] text-slate-500 font-medium leading-none mt-0.5">Inventario y Topografía</p>
+          <p class="text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
       </div>
+
+      <!-- Pestañas de Navegación para Pantallas de Escritorio (Desktop lg:) -->
+      <nav class="hidden lg:flex items-center gap-1.5 bg-white/10 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+        <button
+          onclick="switchTab('locator')"
+          id="nav-desktop-btn-locator"
+          class="nav-desktop-btn nav-desktop-active"
+        >
+          <i data-lucide="compass" class="w-4 h-4"></i>
+          <span>Localizador</span>
+        </button>
+
+        <button
+          onclick="switchTab('inventory')"
+          id="nav-desktop-btn-inventory"
+          class="nav-desktop-btn"
+        >
+          <i data-lucide="check-square" class="w-4 h-4"></i>
+          <span>Inventario</span>
+        </button>
+
+        <button
+          onclick="switchTab('add-book')"
+          id="nav-desktop-btn-add-book"
+          class="nav-desktop-btn"
+        >
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Alta Libro</span>
+        </button>
+
+        <button
+          onclick="switchTab('spaces')"
+          id="nav-desktop-btn-spaces"
+          class="nav-desktop-btn"
+        >
+          <i data-lucide="layout-grid" class="w-4 h-4"></i>
+          <span>Topografía</span>
+        </button>
+      </nav>
 
       <!-- Estado de Conexión, Usuario y Acciones -->
       <div class="flex items-center gap-2">
         
         <!-- Indicador de Servidor Google Apps Script -->
-        <button id="btn-status-indicator" onclick="openSettingsModal()" title="Estado de la conexión a Google Sheets" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/90 text-slate-700 border border-slate-200/80 hover:bg-slate-50 shadow-xs transition active:scale-95">
-          <span id="status-dot" class="w-2 h-2 rounded-full bg-blue-500 ring-2 ring-blue-100"></span>
+        <button id="btn-status-indicator" onclick="openSettingsModal()" title="Estado de la conexión a Google Sheets" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold header-btn shadow-xs">
+          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40"></span>
           <span id="status-label" class="hidden sm:inline text-[11px]">Modo Local</span>
         </button>
 
         <!-- Perfil de Profesor Activo -->
-        <div id="user-profile-badge" class="flex items-center gap-1.5 bg-white/95 border border-slate-200/80 rounded-full py-0.5 pl-1.5 pr-2.5 shadow-xs">
-          <div id="user-avatar" class="w-6 h-6 rounded-full bg-gradient-to-tr from-brand-800 to-indigo-600 text-white text-[11px] font-bold flex items-center justify-center shadow-inner">
+        <div id="user-profile-badge" class="flex items-center gap-2 header-btn rounded-full py-1 pl-1.5 pr-3 shadow-xs">
+          <div id="user-avatar" class="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-slate-900 text-[11px] font-black flex items-center justify-center shadow-inner">
             P
           </div>
           <div class="text-left">
-            <p id="user-display-name" class="text-xs font-bold leading-none text-slate-900 truncate max-w-[90px] sm:max-w-[130px]">Profesor</p>
-            <p id="user-role-badge" class="text-[9px] font-black leading-tight uppercase text-brand-600">Admin</p>
+            <p id="user-display-name" class="text-xs font-bold leading-none text-white truncate max-w-[90px] sm:max-w-[140px]">Profesor</p>
+            <p id="user-role-badge" class="text-[9px] font-black leading-tight uppercase text-indigo-300">Admin</p>
           </div>
         </div>
 
         <!-- Botón Ajustes -->
-        <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 bg-white/80 border border-slate-200/60 hover:bg-slate-100 active:scale-95 transition shadow-xs" title="Configuración y Servidor">
+        <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full flex items-center justify-center header-btn" title="Configuración y Servidor">
           <i data-lucide="settings" class="w-4 h-4"></i>
         </button>
 
         <!-- Botón Cerrar Sesión -->
-        <button onclick="confirmLogout()" class="w-8 h-8 rounded-full flex items-center justify-center text-rose-600 bg-rose-50/80 border border-rose-200/60 hover:bg-rose-100 active:scale-95 transition shadow-xs" title="Cerrar Sesión">
+        <button onclick="confirmLogout()" class="w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition active:scale-95 shadow-xs" title="Cerrar Sesión">
           <i data-lucide="log-out" class="w-4 h-4"></i>
         </button>
       </div>
@@ -119,463 +158,518 @@
   </header>
 
   <!-- ========================================================================= -->
-  <!-- CONTENEDOR PRINCIPAL DE PESTAÑAS (TABS) -->
+  <!-- CONTENEDOR PRINCIPAL RESPONSIVE (MÓVIL + PC) -->
   <!-- ========================================================================= -->
-  <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 overflow-y-auto">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 overflow-y-auto">
 
     <!-- ======================================================================= -->
-    <!-- TAB 1: LOCALIZADOR DE LIBROS -->
+    <!-- TAB 1: LOCALIZADOR DE LIBROS (DASHBOARD DUAL COLUMN EN PC) -->
     <!-- ======================================================================= -->
-    <section id="tab-locator" class="tab-content space-y-4">
-      
-      <!-- Caja de Búsqueda Principal SaaS Floating -->
-      <div class="card-saas p-4 sm:p-5">
-        <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-brand-600"></span>
-          Localizador Topográfico de Ejemplares
-        </h2>
-
-        <div class="flex gap-2">
-          <div class="relative flex-1">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <i data-lucide="barcode" class="w-5 h-5"></i>
-            </div>
-            <input
-              type="text"
-              id="locator-search-input"
-              placeholder="Escanea o escribe Código Séneca, ISBN o Título..."
-              class="w-full pl-10 pr-9 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition shadow-inner"
-              autocomplete="off"
-              onkeypress="if(event.key === 'Enter') handleLocatorSearch()"
-            />
-            <button
-              id="btn-clear-locator-input"
-              onclick="clearLocatorInput()"
-              class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
-            >
-              <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-          </div>
-
-          <!-- Botón de Escaneo con Cámara Gradient Primary -->
-          <button
-            onclick="startScanner('locator')"
-            class="btn-primary-gradient px-4 py-3 font-semibold text-sm rounded-xl flex items-center gap-1.5 transition"
-            title="Escanear con la cámara del móvil"
-          >
-            <i data-lucide="scan-line" class="w-5 h-5"></i>
-            <span class="hidden sm:inline">Escanear</span>
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
-          <span class="flex items-center gap-1">
-            <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400"></i>
-            Busca por código interno Séneca (ej. <code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono font-bold">SEN-00101</code>) o ISBN comercial.
-          </span>
-          <button onclick="handleLocatorSearch()" class="font-bold text-brand-600 hover:text-brand-700 transition">Buscar</button>
-        </div>
-      </div>
-
-      <!-- Tarjeta de Resultado del Libro Encontrado -->
-      <div id="locator-result-card" class="hidden">
-        <!-- Renderizado dinámicamente -->
-      </div>
-
-      <!-- Estado Vacío / Historial y Ejemplos -->
-      <div id="locator-empty-state" class="card-saas p-6 text-center border-dashed border-slate-300">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-100 to-indigo-100 text-brand-700 flex items-center justify-center mx-auto mb-3 shadow-xs">
-          <i data-lucide="compass" class="w-6 h-6"></i>
-        </div>
-        <h3 class="text-sm font-black text-slate-800">Listo para localizar ejemplares</h3>
-        <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1 leading-relaxed">
-          Escanea el código de barras físico del libro para ver al instante en qué zona temática, módulo y balda exacta debe colocarse.
-        </p>
-
-        <!-- Accesos rápidos / Ejemplos -->
-        <div class="mt-4 pt-4 border-t border-slate-100">
-          <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Ejemplos de prueba rápida:</p>
-          <div class="flex flex-wrap justify-center gap-2" id="quick-demo-buttons">
-            <!-- Rellenado por app.js -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Bloques KPI Rediseñados como Widgets SaaS -->
-      <div class="grid grid-cols-3 gap-3">
+    <section id="tab-locator" class="tab-content">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div class="card-kpi p-3.5 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/25 flex-shrink-0">
-            <i data-lucide="book-copy" class="w-5 h-5"></i>
-          </div>
-          <div class="min-w-0">
-            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate">Total Libros</p>
-            <p id="stat-total-books" class="text-lg font-black text-slate-900 leading-tight">0</p>
-          </div>
-        </div>
-
-        <div class="card-kpi p-3.5 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/25 flex-shrink-0">
-            <i data-lucide="layers" class="w-5 h-5"></i>
-          </div>
-          <div class="min-w-0">
-            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate">Baldas</p>
-            <p id="stat-total-shelves" class="text-lg font-black text-slate-900 leading-tight">0</p>
-          </div>
-        </div>
-
-        <div class="card-kpi p-3.5 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/25 flex-shrink-0">
-            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-          </div>
-          <div class="min-w-0">
-            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate">Auditados Hoy</p>
-            <p id="stat-audited-today" class="text-lg font-black text-slate-900 leading-tight">0</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- TAB 2: MODO INVENTARIO MASIVO -->
-    <!-- ======================================================================= -->
-    <section id="tab-inventory" class="tab-content hidden space-y-4">
-      
-      <!-- Paso 1: Fijar Balda Activa -->
-      <div class="card-saas p-4 sm:p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full bg-brand-600 text-white text-[11px] font-black flex items-center justify-center shadow-xs">1</span>
-            Balda Física Activa (Ubicación de Auditoría)
-          </h2>
-          <span id="inventory-shelf-status-pill" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-            Sin balda fijada
-          </span>
-        </div>
-
-        <!-- Sin Balda Fijada -->
-        <div id="shelf-unselected-box" class="space-y-3">
-          <p class="text-xs text-slate-600">
-            Escanea la etiqueta pegada en el filo de la estantería física para comenzar a auditar sus libros:
-          </p>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <button
-              onclick="startScanner('shelf')"
-              class="btn-primary-gradient flex-1 py-3 font-semibold text-sm rounded-xl flex items-center justify-center gap-2 transition"
-            >
-              <i data-lucide="scan" class="w-5 h-5"></i>
-              Escanear Código de Balda (LOC-...)
-            </button>
-            <button
-              onclick="openSelectShelfModal()"
-              class="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl flex items-center justify-center gap-1.5 transition border border-slate-200 active:scale-97"
-            >
-              <i data-lucide="list" class="w-4 h-4"></i>
-              Elegir de la Lista
-            </button>
-          </div>
-        </div>
-
-        <!-- Con Balda Fijada -->
-        <div id="shelf-selected-box" class="hidden space-y-3">
-          <div class="p-3.5 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 rounded-xl border border-brand-200/80 flex items-center justify-between shadow-xs">
-            <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-800 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-brand-900/20">
-                <i data-lucide="layers" class="w-6 h-6"></i>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h3 id="active-shelf-title" class="font-bold text-sm text-slate-900">Módulo 1 - Balda 2</h3>
-                  <code id="active-shelf-code" class="text-[11px] font-mono font-bold bg-white px-2 py-0.5 rounded border border-brand-300 text-brand-800 shadow-2xs">LOC-01-02</code>
-                </div>
-                <p id="active-shelf-zone" class="text-xs text-brand-700 font-medium mt-0.5">Zona: 1 - Psicología y Filosofía</p>
-              </div>
-            </div>
-            <button
-              onclick="resetActiveShelf()"
-              class="text-xs font-bold text-slate-500 hover:text-rose-600 px-2.5 py-1.5 rounded-lg bg-white/80 hover:bg-white border border-slate-200 transition shadow-2xs"
-              title="Cambiar a otra balda"
-            >
-              Cambiar
-            </button>
-          </div>
-
-          <!-- Barra de Progreso de la Balda Activa -->
-          <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-200 space-y-1.5">
-            <div class="flex items-center justify-between text-xs font-bold text-slate-700">
-              <span class="flex items-center gap-1.5">
-                <i data-lucide="activity" class="w-3.5 h-3.5 text-brand-600"></i>
-                Progreso de Auditoría de Balda:
-              </span>
-              <span id="shelf-progress-text" class="text-brand-700 font-mono font-bold">0 / 0 verificados (0%)</span>
-            </div>
-            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
-              <div id="shelf-progress-bar" class="progress-bar-fill h-full bg-emerald-500 rounded-full" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Paso 2: Escaneo Continuo de Libros -->
-      <div id="inventory-scan-section" class="card-saas p-4 sm:p-5 opacity-60 pointer-events-none transition-all">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full bg-brand-600 text-white text-[11px] font-black flex items-center justify-center shadow-xs">2</span>
-            Escaneo Masivo de Ejemplares en esta Balda
-          </h2>
-          <span id="session-scan-counter" class="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-            0 escaneados
-          </span>
-        </div>
-
-        <div class="flex gap-2">
-          <div class="relative flex-1">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <i data-lucide="barcode" class="w-5 h-5"></i>
-            </div>
-            <input
-              type="text"
-              id="inventory-book-input"
-              placeholder="Escanea o escribe Código Séneca o ISBN..."
-              class="w-full pl-10 pr-4 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-inner"
-              autocomplete="off"
-              onkeypress="if(event.key === 'Enter') handleInventoryBookScan()"
-            />
-          </div>
-
-          <button
-            onclick="startContinuousScanner()"
-            class="btn-emerald-gradient px-4 py-3 font-semibold text-sm rounded-xl flex items-center gap-2 transition"
-            title="Abrir cámara en modo ráfaga continua"
-          >
-            <i data-lucide="video" class="w-5 h-5"></i>
-            <span class="hidden sm:inline">Modo Ráfaga</span>
-          </button>
-        </div>
-
-        <p class="text-[11px] text-slate-500 mt-2">
-          En "Modo Ráfaga" la cámara permanece encendida con feedback sonoro y háptico en cada lectura sin pulsar la pantalla.
-        </p>
-      </div>
-
-      <!-- Historial de Auditoría en Vivo de la Sesión -->
-      <div class="card-saas p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-xs font-black uppercase tracking-wider text-slate-500">Historial en Vivo de la Sesión</h3>
-          <button onclick="clearSessionAuditHistory()" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 transition">Limpiar lista</button>
-        </div>
-
-        <div id="session-audit-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-          <div class="text-center py-6 text-slate-400 text-xs">
-            Aún no has escaneado libros en esta sesión de auditoría.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- TAB 3: ALTA RÁPIDA DE NUEVOS EJEMPLARES (SOLO ADMIN) -->
-    <!-- ======================================================================= -->
-    <section id="tab-add-book" class="tab-content hidden space-y-4">
-      
-      <div class="card-saas p-4 sm:p-5">
-        <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
-          <div>
-            <h2 class="text-base font-black text-slate-900 flex items-center gap-2">
-              <i data-lucide="plus-circle" class="w-5 h-5 text-brand-600"></i>
-              Alta Rápida y Enriquecimiento de Ejemplar
-            </h2>
-            <p class="text-xs text-slate-500">Recupera metadatos y carátula mediante motor estricto (OpenLibrary / Google Books)</p>
-          </div>
-          <span class="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 shadow-2xs">
-            Admin
-          </span>
-        </div>
-
-        <form id="form-add-book" onsubmit="handleCreateBook(event)" class="space-y-4">
+        <!-- Columna Principal: Búsqueda y Resultado (8 columnas en PC) -->
+        <div class="lg:col-span-8 space-y-4">
           
-          <!-- Búsqueda y Enriquecimiento por ISBN -->
-          <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-inner">
-            <label class="block text-xs font-black uppercase tracking-wider text-slate-700">
-              1. ISBN del Libro (Código Comercial) *
-            </label>
+          <!-- Caja de Búsqueda Principal SaaS Floating -->
+          <div class="card-saas p-4 sm:p-6">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-600"></span>
+                Localizador Topográfico de Ejemplares
+              </h2>
+              <span class="hidden sm:inline-flex text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md font-mono">
+                Presiona Enter para buscar
+              </span>
+            </div>
+
             <div class="flex gap-2">
               <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="barcode" class="w-5 h-5"></i>
+                </div>
                 <input
                   type="text"
-                  id="add-book-isbn"
-                  placeholder="ej. 9788437604947"
-                  class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-mono font-medium focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onclick="startScanner('add-isbn')"
-                class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg flex items-center gap-1 transition border border-slate-200 active:scale-97"
-                title="Escanear ISBN comercial con la cámara"
-              >
-                <i data-lucide="scan-line" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">Escanear</span>
-              </button>
-              <button
-                type="button"
-                id="btn-enrich-isbn"
-                onclick="fetchMetadataByISBN()"
-                class="btn-primary-gradient px-3.5 py-2.5 font-semibold text-xs rounded-lg flex items-center gap-1.5 transition"
-              >
-                <i data-lucide="sparkles" class="w-4 h-4"></i>
-                <span>Autocompletar</span>
-              </button>
-            </div>
-            <div id="isbn-enrich-status" class="text-[11px] text-slate-500 flex items-center gap-1"></div>
-          </div>
-
-          <!-- Metadatos y Carátula -->
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            
-            <!-- Portada y Opciones de Carga Manual/Foto -->
-            <div class="sm:col-span-1 flex flex-col items-center">
-              <div id="add-book-cover-preview" class="w-28 h-36 rounded-xl bg-slate-100 border border-slate-200 flex flex-col items-center justify-center text-slate-400 overflow-hidden shadow-md shadow-slate-900/10 relative">
-                <i data-lucide="image" class="w-8 h-8"></i>
-                <span class="text-[10px] mt-1 font-semibold">Sin portada</span>
-              </div>
-              <input type="hidden" id="add-book-cover-url" />
-              
-              <div class="flex items-center gap-2 mt-2">
-                <label class="cursor-pointer text-[11px] font-bold text-brand-600 hover:underline flex items-center gap-1">
-                  <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-                  <span>Hacer Foto</span>
-                  <input type="file" id="cover-file-input" accept="image/*" capture="environment" onchange="handleCustomCoverUpload(event)" class="hidden" />
-                </label>
-                <span class="text-slate-300">|</span>
-                <button type="button" onclick="promptCustomCover()" class="text-[11px] font-bold text-slate-500 hover:underline">URL</button>
-              </div>
-            </div>
-
-            <!-- Campos de Título, Autor, Editorial, Año -->
-            <div class="sm:col-span-3 space-y-3">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Título del Libro *</label>
-                <input
-                  type="text"
-                  id="add-book-title"
-                  placeholder="ej. Don Quijote de la Mancha"
-                  class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
-                  required
-                />
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Autor / Autora *</label>
-                  <input
-                    type="text"
-                    id="add-book-author"
-                    placeholder="ej. Miguel de Cervantes"
-                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
-                    required
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Editorial</label>
-                  <input
-                    type="text"
-                    id="add-book-publisher"
-                    placeholder="ej. Cátedra"
-                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
-                  />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Año</label>
-                  <input
-                    type="text"
-                    id="add-book-year"
-                    placeholder="ej. 2018"
-                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Estado Físico</label>
-                  <select
-                    id="add-book-state"
-                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
-                  >
-                    <option value="Disponible - Excelente">Disponible (Excelente)</option>
-                    <option value="Disponible - Bueno" selected>Disponible (Bueno)</option>
-                    <option value="Disponible - Regular">Disponible (Regular)</option>
-                    <option value="En Reparación">En Reparación</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Asignación de Código Séneca y Balda Física -->
-          <div class="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            <!-- Código Interno Séneca -->
-            <div>
-              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                2. Código Interno Séneca (Pegatina Física) *
-              </label>
-              <div class="flex gap-2">
-                <input
-                  type="text"
-                  id="add-book-internal-code"
-                  placeholder="ej. SEN-00109"
-                  class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-medium focus:ring-2 focus:ring-brand-500 transition"
-                  required
+                  id="locator-search-input"
+                  placeholder="Escanea o escribe Código Séneca, ISBN o Título del libro..."
+                  class="w-full pl-10 pr-9 py-3.5 bg-slate-50/90 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition shadow-inner"
+                  autocomplete="off"
+                  onkeypress="if(event.key === 'Enter') handleLocatorSearch()"
                 />
                 <button
-                  type="button"
-                  onclick="startScanner('add-internal')"
-                  class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg flex items-center gap-1 transition border border-slate-200 active:scale-97"
-                  title="Escanear Código Séneca"
+                  id="btn-clear-locator-input"
+                  onclick="clearLocatorInput()"
+                  class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
                 >
-                  <i data-lucide="scan-line" class="w-4 h-4"></i>
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- Botón de Escaneo con Cámara Gradient Primary -->
+              <button
+                onclick="startScanner('locator')"
+                class="btn-primary-gradient px-5 py-3.5 font-bold text-sm rounded-xl flex items-center gap-2 transition"
+                title="Escanear con la cámara del dispositivo"
+              >
+                <i data-lucide="scan-line" class="w-5 h-5"></i>
+                <span>Escanear</span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="info" class="w-4 h-4 text-brand-600 flex-shrink-0"></i>
+                Busca por código de barras de la pegatina (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono font-bold">SEN-00101</code>) o ISBN comercial.
+              </span>
+              <button onclick="handleLocatorSearch()" class="font-bold text-brand-600 hover:text-brand-700 transition">Buscar ahora</button>
+            </div>
+          </div>
+
+          <!-- Tarjeta de Resultado del Libro Encontrado -->
+          <div id="locator-result-card" class="hidden">
+            <!-- Renderizado dinámicamente -->
+          </div>
+
+          <!-- Estado Vacío / Instrucciones -->
+          <div id="locator-empty-state" class="card-saas p-8 text-center border-dashed border-slate-300">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-100 to-indigo-100 text-brand-700 flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <i data-lucide="compass" class="w-7 h-7"></i>
+            </div>
+            <h3 class="text-base font-black text-slate-800">Listo para localizar ejemplares</h3>
+            <p class="text-xs text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
+              Introduce el código de barras o escanea con la cámara para mostrar instantáneamente la ubicación física exacta (Zona CDU, Módulo y Balda).
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Columna Lateral: Métricas KPI, Accesos Rápidos e Información (4 columnas en PC) -->
+        <div class="lg:col-span-4 space-y-4">
+          
+          <!-- Bloque de Widgets KPI en Columna Vertical para PC -->
+          <div class="space-y-3">
+            
+            <div class="card-kpi p-4 flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/25 flex-shrink-0">
+                <i data-lucide="book-copy" class="w-6 h-6"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Ejemplares Registrados</p>
+                <p id="stat-total-books" class="text-2xl font-black text-slate-900 leading-tight">0</p>
+              </div>
+            </div>
+
+            <div class="card-kpi p-4 flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/25 flex-shrink-0">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Baldas Topográficas</p>
+                <p id="stat-total-shelves" class="text-2xl font-black text-slate-900 leading-tight">0</p>
+              </div>
+            </div>
+
+            <div class="card-kpi p-4 flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/25 flex-shrink-0">
+                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Auditados Hoy</p>
+                <p id="stat-audited-today" class="text-2xl font-black text-slate-900 leading-tight">0</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Tarjeta de Ejemplos y Pruebas Rápidas -->
+          <div class="card-saas p-4">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2.5 flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+              Prueba Rápida con Datos Demo:
+            </h3>
+            <div class="flex flex-wrap gap-2" id="quick-demo-buttons">
+              <!-- Rellenado por app.js -->
+            </div>
+          </div>
+
+          <!-- Tarjeta Informativa de Topografía -->
+          <div class="card-saas p-4 bg-gradient-to-br from-indigo-50/70 to-slate-50 border-indigo-100">
+            <div class="flex items-center gap-2.5 text-indigo-900 font-bold text-xs">
+              <i data-lucide="map" class="w-4 h-4 text-indigo-600"></i>
+              <span>17 Zonas Temáticas Integradas</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">
+              Incluye Rincón Violeta (RV), Canon Lector (CL), Fondo Local (FL) y las 9 áreas universales de la CDU.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- TAB 2: MODO INVENTARIO MASIVO (DUAL COLUMN EN PC) -->
+    <!-- ======================================================================= -->
+    <section id="tab-inventory" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Columna Izquierda: Fijar Balda y Escaneo (7 columnas en PC) -->
+        <div class="lg:col-span-7 space-y-4">
+          
+          <!-- Paso 1: Fijar Balda Activa -->
+          <div class="card-saas p-4 sm:p-6">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-600 text-white text-[11px] font-black flex items-center justify-center shadow-xs">1</span>
+                Balda Física Activa (Ubicación de Auditoría)
+              </h2>
+              <span id="inventory-shelf-status-pill" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                Sin balda fijada
+              </span>
+            </div>
+
+            <!-- Sin Balda Fijada -->
+            <div id="shelf-unselected-box" class="space-y-3">
+              <p class="text-xs text-slate-600">
+                Escanea la etiqueta pegada en el filo de la estantería física para comenzar a auditar sus libros:
+              </p>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button
+                  onclick="startScanner('shelf')"
+                  class="btn-primary-gradient flex-1 py-3 font-semibold text-sm rounded-xl flex items-center justify-center gap-2 transition"
+                >
+                  <i data-lucide="scan" class="w-5 h-5"></i>
+                  Escanear Código de Balda (LOC-...)
+                </button>
+                <button
+                  onclick="openSelectShelfModal()"
+                  class="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl flex items-center justify-center gap-1.5 transition border border-slate-200 active:scale-97"
+                >
+                  <i data-lucide="list" class="w-4 h-4"></i>
+                  Elegir de la Lista
                 </button>
               </div>
             </div>
 
-            <!-- Balda / Espacio Asignado -->
-            <div>
-              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                3. Balda Asignada *
-              </label>
-              <select
-                id="add-book-space-id"
-                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
-                required
-              >
-                <option value="">-- Selecciona una balda --</option>
-              </select>
+            <!-- Con Balda Fijada -->
+            <div id="shelf-selected-box" class="hidden space-y-3">
+              <div class="p-4 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 rounded-2xl border border-brand-200/80 flex items-center justify-between shadow-xs">
+                <div class="flex items-center gap-3.5">
+                  <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-800 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-brand-900/20">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 id="active-shelf-title" class="font-bold text-sm text-slate-900">Módulo 1 - Balda 2</h3>
+                      <code id="active-shelf-code" class="text-[11px] font-mono font-black bg-white px-2.5 py-0.5 rounded border border-brand-300 text-brand-800 shadow-2xs">LOC-01-02</code>
+                    </div>
+                    <p id="active-shelf-zone" class="text-xs text-brand-700 font-semibold mt-0.5">Zona: 1 - Psicología y Filosofía</p>
+                  </div>
+                </div>
+                <button
+                  onclick="resetActiveShelf()"
+                  class="text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg bg-white/90 hover:bg-white border border-slate-200 transition shadow-2xs"
+                  title="Cambiar a otra balda"
+                >
+                  Cambiar
+                </button>
+              </div>
+
+              <!-- Barra de Progreso de la Balda Activa -->
+              <div class="bg-slate-50/90 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                  <span class="flex items-center gap-1.5">
+                    <i data-lucide="activity" class="w-4 h-4 text-brand-600"></i>
+                    Progreso de Auditoría de Balda:
+                  </span>
+                  <span id="shelf-progress-text" class="text-brand-700 font-mono font-black">0 / 0 verificados (0%)</span>
+                </div>
+                <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                  <div id="shelf-progress-bar" class="progress-bar-fill h-full bg-emerald-500 rounded-full" style="width: 0%;"></div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Botón de Guardado -->
-          <div class="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="text-xs text-slate-500 flex items-center gap-1.5">
-              <i data-lucide="user-check" class="w-4 h-4 text-brand-600"></i>
-              <span>Profesor responsable: <strong id="add-book-registered-by-label">Profesor Activo</strong></span>
+          <!-- Paso 2: Escaneo Continuo de Libros -->
+          <div id="inventory-scan-section" class="card-saas p-4 sm:p-6 opacity-60 pointer-events-none transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-600 text-white text-[11px] font-black flex items-center justify-center shadow-xs">2</span>
+                Escaneo Masivo de Ejemplares en esta Balda
+              </h2>
             </div>
-            <button
-              type="submit"
-              id="btn-save-new-book"
-              class="btn-primary-gradient px-6 py-3 font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition"
-            >
-              <i data-lucide="save" class="w-4 h-4"></i>
-              Guardar Ejemplar en Inventario
-            </button>
+
+            <div class="flex gap-2">
+              <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="barcode" class="w-5 h-5"></i>
+                </div>
+                <input
+                  type="text"
+                  id="inventory-book-input"
+                  placeholder="Escanea o escribe Código Séneca o ISBN..."
+                  class="w-full pl-10 pr-4 py-3.5 bg-slate-50/90 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-inner"
+                  autocomplete="off"
+                  onkeypress="if(event.key === 'Enter') handleInventoryBookScan()"
+                />
+              </div>
+
+              <button
+                onclick="startContinuousScanner()"
+                class="btn-emerald-gradient px-5 py-3.5 font-bold text-sm rounded-xl flex items-center gap-2 transition"
+                title="Abrir cámara en modo ráfaga continua"
+              >
+                <i data-lucide="video" class="w-5 h-5"></i>
+                <span>Modo Ráfaga</span>
+              </button>
+            </div>
+
+            <p class="text-xs text-slate-500 mt-2.5">
+              En "Modo Ráfaga" la cámara permanece encendida con feedback sonoro y háptico en cada lectura sin tocar la pantalla.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Columna Derecha: Historial de Auditoría en Vivo (5 columnas en PC) -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="card-saas p-4 sm:p-6 flex flex-col h-full">
+            <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-black text-slate-800">Historial de Auditoría en Vivo</h3>
+                <p class="text-[11px] text-slate-500">Transmisión de lecturas en tiempo real</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="session-scan-counter" class="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-2xs">
+                  0 escaneados
+                </span>
+                <button onclick="clearSessionAuditHistory()" class="text-xs font-bold text-slate-400 hover:text-slate-600 transition" title="Limpiar lista">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div id="session-audit-list" class="space-y-2.5 flex-1 max-h-[460px] overflow-y-auto pr-1">
+              <div class="text-center py-8 text-slate-400 text-xs">
+                Aún no has escaneado libros en esta sesión de auditoría.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- TAB 3: ALTA RÁPIDA DE NUEVOS EJEMPLARES (SOLO ADMIN - DUAL COLUMN EN PC) -->
+    <!-- ======================================================================= -->
+    <section id="tab-add-book" class="tab-content hidden">
+      <div class="card-saas p-4 sm:p-6 lg:p-8">
+        
+        <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-5 h-5 text-brand-600"></i>
+              Alta Rápida y Enriquecimiento de Ejemplar
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Recupera metadatos y carátula mediante motor estricto (OpenLibrary / Google Books)</p>
+          </div>
+          <span class="text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200 shadow-2xs">
+            Admin
+          </span>
+        </div>
+
+        <form id="form-add-book" onsubmit="handleCreateBook(event)" class="space-y-6">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Columna Izquierda: Búsqueda ISBN y Datos (8 columnas en PC) -->
+            <div class="lg:col-span-8 space-y-4">
+              
+              <!-- Búsqueda y Enriquecimiento por ISBN -->
+              <div class="bg-slate-50/90 p-4 rounded-2xl border border-slate-200 space-y-2.5 shadow-inner">
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                  1. ISBN del Libro (Código Comercial) *
+                </label>
+                <div class="flex gap-2">
+                  <div class="relative flex-1">
+                    <input
+                      type="text"
+                      id="add-book-isbn"
+                      placeholder="ej. 9788437604947"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono font-medium focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onclick="startScanner('add-isbn')"
+                    class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 transition border border-slate-200 active:scale-97"
+                    title="Escanear ISBN comercial con la cámara"
+                  >
+                    <i data-lucide="scan-line" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Escanear</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="btn-enrich-isbn"
+                    onclick="fetchMetadataByISBN()"
+                    class="btn-primary-gradient px-4 py-2.5 font-bold text-xs rounded-xl flex items-center gap-1.5 transition"
+                  >
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Autocompletar</span>
+                  </button>
+                </div>
+                <div id="isbn-enrich-status" class="text-[11px] text-slate-500 flex items-center gap-1"></div>
+              </div>
+
+              <!-- Campos de Título, Autor, Editorial, Año -->
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Título del Libro *</label>
+                  <input
+                    type="text"
+                    id="add-book-title"
+                    placeholder="ej. Don Quijote de la Mancha"
+                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
+                    required
+                  />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Autor / Autora *</label>
+                    <input
+                      type="text"
+                      id="add-book-author"
+                      placeholder="ej. Miguel de Cervantes"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Editorial</label>
+                    <input
+                      type="text"
+                      id="add-book-publisher"
+                      placeholder="ej. Cátedra"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
+                    />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Año</label>
+                    <input
+                      type="text"
+                      id="add-book-year"
+                      placeholder="ej. 2018"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Estado Físico</label>
+                    <select
+                      id="add-book-state"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
+                    >
+                      <option value="Disponible - Excelente">Disponible (Excelente)</option>
+                      <option value="Disponible - Bueno" selected>Disponible (Bueno)</option>
+                      <option value="Disponible - Regular">Disponible (Regular)</option>
+                      <option value="En Reparación">En Reparación</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Asignación de Código Séneca y Balda Física -->
+              <div class="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    2. Código Interno Séneca (Pegatina) *
+                  </label>
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      id="add-book-internal-code"
+                      placeholder="ej. SEN-00109"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono font-medium focus:ring-2 focus:ring-brand-500 transition"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onclick="startScanner('add-internal')"
+                      class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 transition border border-slate-200 active:scale-97"
+                      title="Escanear Código Séneca"
+                    >
+                      <i data-lucide="scan-line" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    3. Balda Asignada *
+                  </label>
+                  <select
+                    id="add-book-space-id"
+                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-500 transition"
+                    required
+                  >
+                    <option value="">-- Selecciona una balda --</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Columna Derecha: Vista Previa Portada 3D y Guardado (4 columnas en PC) -->
+            <div class="lg:col-span-4 flex flex-col items-center justify-between p-4 bg-slate-50/80 rounded-2xl border border-slate-200/90 space-y-4">
+              
+              <div class="w-full flex flex-col items-center">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">Vista Previa de Portada</p>
+                <div id="add-book-cover-preview" class="w-36 h-48 rounded-xl bg-slate-100 border border-slate-200 flex flex-col items-center justify-center text-slate-400 overflow-hidden shadow-lg shadow-slate-900/15 relative">
+                  <i data-lucide="image" class="w-10 h-10"></i>
+                  <span class="text-xs mt-1.5 font-semibold">Sin portada</span>
+                </div>
+                <input type="hidden" id="add-book-cover-url" />
+                
+                <div class="flex items-center gap-2 mt-3">
+                  <label class="cursor-pointer text-xs font-bold text-brand-600 hover:underline flex items-center gap-1">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span>Hacer Foto</span>
+                    <input type="file" id="cover-file-input" accept="image/*" capture="environment" onchange="handleCustomCoverUpload(event)" class="hidden" />
+                  </label>
+                  <span class="text-slate-300">|</span>
+                  <button type="button" onclick="promptCustomCover()" class="text-xs font-bold text-slate-500 hover:underline">URL Web</button>
+                </div>
+              </div>
+
+              <div class="w-full pt-4 border-t border-slate-200/80 space-y-3">
+                <div class="text-xs text-slate-500 flex items-center gap-1.5">
+                  <i data-lucide="user-check" class="w-4 h-4 text-brand-600"></i>
+                  <span>Responsable: <strong id="add-book-registered-by-label" class="text-slate-800">Profesor Activo</strong></span>
+                </div>
+                <button
+                  type="submit"
+                  id="btn-save-new-book"
+                  class="btn-primary-gradient w-full py-3.5 font-black text-sm rounded-xl flex items-center justify-center gap-2 transition"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  Guardar en Inventario
+                </button>
+              </div>
+
+            </div>
+
           </div>
 
         </form>
       </div>
-
     </section>
 
     <!-- ======================================================================= -->
@@ -583,22 +677,22 @@
     <!-- ======================================================================= -->
     <section id="tab-spaces" class="tab-content hidden space-y-4">
       
-      <div class="card-saas p-4 sm:p-5">
+      <div class="card-saas p-4 sm:p-6 lg:p-8">
         
         <!-- Encabezado y Acciones -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <h2 class="text-base font-black text-slate-900 flex items-center gap-2">
+            <h2 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <i data-lucide="map-pin" class="w-5 h-5 text-brand-600"></i>
               Topografía Real del Centro y Etiquetas PDF
             </h2>
-            <p class="text-xs text-slate-500">Mapeo de las 17 zonas temáticas del centro y generador de tiras A4 para filo de estantería (Code 128)</p>
+            <p class="text-xs text-slate-500 mt-0.5">Mapeo de las 17 zonas temáticas y generador de tiras A4 para filo de estantería (Code 128)</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
             <button
               onclick="openCreateZoneModal()"
-              class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 border border-slate-200 transition active:scale-97"
+              class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1 border border-slate-200 transition active:scale-97"
               title="Añadir nueva zona temática personalizada"
             >
               <i data-lucide="tag" class="w-3.5 h-3.5"></i>
@@ -606,7 +700,7 @@
             </button>
             <button
               onclick="openCreateSpaceModal()"
-              class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl flex items-center gap-1 border border-slate-200 transition active:scale-97"
+              class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1 border border-slate-200 transition active:scale-97"
               title="Añadir nueva balda"
             >
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -615,7 +709,7 @@
             <button
               onclick="generateSelectedShelvesPDF()"
               id="btn-generate-pdf"
-              class="btn-primary-gradient px-4 py-2 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition"
+              class="btn-primary-gradient px-4 py-2 font-bold text-xs rounded-xl flex items-center gap-1.5 transition"
             >
               <i data-lucide="printer" class="w-4 h-4"></i>
               Generar PDF (<span id="selected-shelves-count">0</span>)
@@ -626,8 +720,8 @@
         <!-- Filtro de las 17 Zonas Reales -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 text-xs">
           <div class="flex items-center gap-2">
-            <label class="font-black text-slate-600 flex-shrink-0">Zona Temática:</label>
-            <select id="spaces-filter-cdu" onchange="renderSpacesList()" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-brand-500">
+            <label class="font-black text-slate-600 flex-shrink-0">Filtrar por Zona:</label>
+            <select id="spaces-filter-cdu" onchange="renderSpacesList()" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-brand-500">
               <option value="ALL">Todas las zonas del centro</option>
             </select>
           </div>
@@ -638,8 +732,8 @@
           </div>
         </div>
 
-        <!-- Lista de Baldas Físicas -->
-        <div id="spaces-container" class="mt-4 space-y-2.5">
+        <!-- Lista de Baldas Físicas en Grid Adaptable -->
+        <div id="spaces-container" class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <!-- Renderizado dinámicamente -->
         </div>
 
@@ -650,9 +744,9 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- BARRA DE NAVEGACIÓN INFERIOR (FROSTED GLASS BOTTOM NAV) -->
+  <!-- BARRA DE NAVEGACIÓN INFERIOR (MÓVIL lg:hidden) -->
   <!-- ========================================================================= -->
-  <nav class="fixed bottom-0 inset-x-0 z-30 glass-nav px-2 py-2">
+  <nav class="fixed bottom-0 inset-x-0 z-30 glass-nav px-2 py-2 lg:hidden">
     <div class="max-w-md mx-auto grid grid-cols-4 gap-1.5">
       
       <!-- Tab 1: Localizador -->
@@ -737,7 +831,7 @@
 
     <!-- Entrada Manual Alternativa -->
     <div class="p-4 bg-slate-900 border-t border-slate-800 text-white space-y-2">
-      <div class="flex gap-2">
+      <div class="flex gap-2 max-w-md mx-auto">
         <input
           type="text"
           id="scanner-manual-input"
@@ -747,7 +841,7 @@
         />
         <button
           onclick="submitScannerManualInput()"
-          class="btn-primary-gradient px-4 py-2.5 font-semibold text-xs rounded-xl"
+          class="btn-primary-gradient px-4 py-2.5 font-bold text-xs rounded-xl"
         >
           OK
         </button>
@@ -758,10 +852,10 @@
   <!-- ========================================================================= -->
   <!-- MODAL: AUTENTICACIÓN ESTRICTA POR PIN INDIVIDUAL -->
   <!-- ========================================================================= -->
-  <div id="modal-login" class="fixed inset-0 z-50 bg-slate-900/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="card-saas max-w-sm w-full p-6 text-center space-y-4">
+  <div id="modal-login" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
       
-      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-900 via-brand-700 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-brand-900/35 p-2">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-900 via-indigo-700 to-sky-500 text-white flex items-center justify-center mx-auto shadow-xl shadow-brand-900/40 p-2.5 ring-2 ring-white/30">
         <img src="./icon.svg" alt="Logo" class="w-full h-full object-contain drop-shadow" />
       </div>
 
@@ -818,8 +912,8 @@
   <!-- ========================================================================= -->
   <!-- MODAL: AJUSTES Y VINCULACIÓN CON GOOGLE APPS SCRIPT -->
   <!-- ========================================================================= -->
-  <div id="modal-settings" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="card-saas max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+  <div id="modal-settings" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
       
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
@@ -851,14 +945,14 @@
           <button
             onclick="testBackendConnection()"
             id="btn-test-connection"
-            class="btn-primary-gradient flex-1 py-2.5 font-semibold rounded-xl flex items-center justify-center gap-1.5 transition"
+            class="btn-primary-gradient flex-1 py-2.5 font-bold rounded-xl flex items-center justify-center gap-1.5 transition"
           >
             <i data-lucide="wifi" class="w-4 h-4"></i>
             Probar y Sincronizar
           </button>
           <button
             onclick="saveGasUrlOnly()"
-            class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition active:scale-97"
+            class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition active:scale-97"
           >
             Guardar
           </button>
@@ -898,8 +992,8 @@
   <!-- ========================================================================= -->
   <!-- MODAL: CREAR NUEVA BALDA FÍSICA -->
   <!-- ========================================================================= -->
-  <div id="modal-create-space" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="card-saas max-w-md w-full p-6 space-y-4">
+  <div id="modal-create-space" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
           <i data-lucide="plus-circle" class="w-5 h-5 text-brand-600"></i>
@@ -950,8 +1044,8 @@
   <!-- ========================================================================= -->
   <!-- MODAL: CREAR NUEVA ZONA TEMÁTICA PERSONALIZADA -->
   <!-- ========================================================================= -->
-  <div id="modal-create-zone" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="card-saas max-w-md w-full p-6 space-y-4">
+  <div id="modal-create-zone" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
           <i data-lucide="tag" class="w-5 h-5 text-brand-600"></i>
@@ -997,8 +1091,8 @@
   <!-- ========================================================================= -->
   <!-- MODAL: SELECCIONAR BALDA PARA INVENTARIAR -->
   <!-- ========================================================================= -->
-  <div id="modal-select-shelf" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="card-saas max-w-md w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+  <div id="modal-select-shelf" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-md w-full p-6 space-y-4 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
           <i data-lucide="layers" class="w-5 h-5 text-brand-600"></i>

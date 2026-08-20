@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (Rediseño Visual Premium WOW)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (Dashboard Responsive PC + Móvil)
  * ==============================================================================
  * Sistema de inventario, topografía real y catalogación de biblioteca escolar.
  * Autenticación estricta por PIN individual, 17 zonas temáticas y Google Sheets.
@@ -350,16 +350,16 @@ function updateConnectionStatusIndicator(status) {
   if (!dot || !label) return;
 
   if (status === "connected") {
-    dot.className = "w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/40";
     label.textContent = "Google Sheets";
   } else if (status === "syncing") {
-    dot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping ring-2 ring-amber-100";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping ring-2 ring-amber-400/40";
     label.textContent = "Sincronizando...";
   } else if (status === "offline" || status === "demo") {
-    dot.className = "w-2 h-2 rounded-full bg-blue-500 ring-2 ring-blue-100";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40";
     label.textContent = "Modo Local";
   } else {
-    dot.className = "w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-100";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-rose-400 ring-2 ring-rose-400/40";
     label.textContent = "Error Servidor";
   }
 }
@@ -475,8 +475,8 @@ function applyUserSession(user) {
   if (roleEl) {
     roleEl.textContent = user.Rol;
     roleEl.className = user.Rol === "Admin"
-      ? "text-[9px] font-black leading-tight uppercase text-brand-600"
-      : "text-[9px] font-black leading-tight uppercase text-amber-600";
+      ? "text-[9px] font-black leading-tight uppercase text-indigo-300"
+      : "text-[9px] font-black leading-tight uppercase text-amber-300";
   }
   if (avatarEl) {
     avatarEl.textContent = user.Nombre_Profesor.charAt(0).toUpperCase();
@@ -485,14 +485,18 @@ function applyUserSession(user) {
     registeredByLabel.textContent = user.Nombre_Profesor;
   }
 
-  // Control de Roles: Ocultar o mostrar pestañas de Admin
+  // Control de Roles: Ocultar o mostrar pestañas de Admin (móvil y desktop)
   const navAdd = document.getElementById("nav-btn-add-book");
   const navSpaces = document.getElementById("nav-btn-spaces");
+  const navDesktopAdd = document.getElementById("nav-desktop-btn-add-book");
+  const navDesktopSpaces = document.getElementById("nav-desktop-btn-spaces");
 
   if (user.Rol === "Ayudante") {
     if (navAdd) navAdd.classList.add("hidden");
     if (navSpaces) navSpaces.classList.add("hidden");
-    const navContainer = document.querySelector("nav > div");
+    if (navDesktopAdd) navDesktopAdd.classList.add("hidden");
+    if (navDesktopSpaces) navDesktopSpaces.classList.add("hidden");
+    const navContainer = document.querySelector("nav.lg\\:hidden > div");
     if (navContainer) {
       navContainer.className = "max-w-md mx-auto grid grid-cols-2 gap-2";
     }
@@ -500,7 +504,9 @@ function applyUserSession(user) {
   } else {
     if (navAdd) navAdd.classList.remove("hidden");
     if (navSpaces) navSpaces.classList.remove("hidden");
-    const navContainer = document.querySelector("nav > div");
+    if (navDesktopAdd) navDesktopAdd.classList.remove("hidden");
+    if (navDesktopSpaces) navDesktopSpaces.classList.remove("hidden");
+    const navContainer = document.querySelector("nav.lg\\:hidden > div");
     if (navContainer) {
       navContainer.className = "max-w-md mx-auto grid grid-cols-4 gap-1.5";
     }
@@ -520,7 +526,7 @@ function confirmLogout() {
 }
 
 // ==============================================================================
-// 6. NAVEGACIÓN POR PESTAÑAS (TABS)
+// 6. NAVEGACIÓN POR PESTAÑAS (TABS RESPONSIVE)
 // ==============================================================================
 function switchTab(tabId) {
   const tabs = ["locator", "inventory", "add-book", "spaces"];
@@ -529,6 +535,12 @@ function switchTab(tabId) {
     inventory: "nav-btn-inventory",
     "add-book": "nav-btn-add-book",
     spaces: "nav-btn-spaces"
+  };
+  const navDesktopIds = {
+    locator: "nav-desktop-btn-locator",
+    inventory: "nav-desktop-btn-inventory",
+    "add-book": "nav-desktop-btn-add-book",
+    spaces: "nav-desktop-btn-spaces"
   };
 
   if (AppState.currentUser && AppState.currentUser.Rol === "Ayudante") {
@@ -542,6 +554,8 @@ function switchTab(tabId) {
   tabs.forEach(t => {
     const el = document.getElementById(`tab-${t}`);
     const navBtn = document.getElementById(navIds[t]);
+    const navDesktopBtn = document.getElementById(navDesktopIds[t]);
+
     if (el) {
       if (t === tabId) {
         el.classList.remove("hidden");
@@ -554,6 +568,13 @@ function switchTab(tabId) {
         navBtn.className = "nav-tab-active flex flex-col items-center justify-center py-2 px-1 rounded-xl text-brand-700 transition active:scale-95";
       } else {
         navBtn.className = "flex flex-col items-center justify-center py-2 px-1 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition active:scale-95";
+      }
+    }
+    if (navDesktopBtn) {
+      if (t === tabId) {
+        navDesktopBtn.className = "nav-desktop-btn nav-desktop-active";
+      } else {
+        navDesktopBtn.className = "nav-desktop-btn";
       }
     }
   });
@@ -814,71 +835,71 @@ function renderBookResult(book) {
     : createPlaceholderCoverSvg(book.Titulo, book.Autor);
 
   container.innerHTML = `
-    <div class="card-saas p-5 scan-success-pulse space-y-4 shadow-xl border-slate-200">
+    <div class="card-saas p-5 sm:p-6 scan-success-pulse space-y-4 shadow-xl border-slate-200">
       
       <!-- Topografía Física Destacada en Gradiente Cobalto / Índigo -->
-      <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white p-4 rounded-2xl shadow-lg shadow-blue-900/25 space-y-2.5">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-full ${zoneClass} shadow-xs font-mono">
+      <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-lg shadow-blue-900/30 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[10px] sm:text-xs uppercase font-black tracking-wider px-3 py-1 rounded-full ${zoneClass} shadow-xs font-mono">
             ${cduZone}
           </span>
-          <span class="text-xs font-mono font-black text-slate-900 bg-white/95 px-2.5 py-1 rounded-lg border border-white/40 shadow-sm">
+          <span class="text-xs sm:text-sm font-mono font-black text-slate-900 bg-white/95 px-3 py-1 rounded-lg border border-white/40 shadow-sm">
             ${shelfBarcode}
           </span>
         </div>
 
-        <div class="flex items-center gap-3.5 pt-1">
-          <div class="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center font-black text-xl shadow-inner border border-white/20">
-            <i data-lucide="map-pin" class="w-6 h-6 text-amber-300"></i>
+        <div class="flex items-center gap-4 pt-1">
+          <div class="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center font-black text-2xl shadow-inner border border-white/20 flex-shrink-0">
+            <i data-lucide="map-pin" class="w-7 h-7 text-amber-300"></i>
           </div>
           <div>
-            <p class="text-[10px] text-blue-200 font-bold uppercase tracking-widest">Ubicación Física en Biblioteca:</p>
-            <h3 class="text-lg font-black text-white leading-tight mt-0.5">
-              ${moduleNum} — <span class="text-amber-300 underline decoration-amber-400/50 underline-offset-2">${shelfNum}</span>
+            <p class="text-[10px] sm:text-xs text-indigo-200 font-black uppercase tracking-widest">Ubicación Física en Biblioteca:</p>
+            <h3 class="text-xl sm:text-2xl font-black text-white leading-tight mt-0.5">
+              ${moduleNum} — <span class="text-amber-300 underline decoration-amber-400/50 underline-offset-4">${shelfNum}</span>
             </h3>
           </div>
         </div>
       </div>
 
-      <!-- Ficha Bibliográfica SaaS -->
-      <div class="flex gap-4 items-start pt-1">
-        <div class="w-24 h-32 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 shadow-md shadow-slate-900/10 relative">
+      <!-- Ficha Bibliográfica con Portada en Relieve 3D -->
+      <div class="flex flex-col sm:flex-row gap-5 items-start pt-2">
+        <div class="w-28 sm:w-32 h-40 sm:h-44 book-cover-3d bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 relative cursor-pointer mx-auto sm:mx-0">
           ${coverHtml}
         </div>
 
-        <div class="flex-1 min-w-0 space-y-1.5">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono border border-emerald-200">
+        <div class="flex-1 min-w-0 space-y-2 text-center sm:text-left">
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <span class="text-xs font-black px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono border border-emerald-200">
               ${book.Codigo_Interno}
             </span>
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono border border-slate-200">
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono border border-slate-200">
               ISBN: ${book.ISBN || "Sin ISBN"}
             </span>
           </div>
 
-          <h3 class="text-base font-black text-slate-900 leading-snug">${book.Titulo}</h3>
-          <p class="text-xs text-slate-700 font-semibold">${book.Autor}</p>
-          <p class="text-[11px] text-slate-400">
+          <h3 class="text-lg font-black text-slate-900 leading-snug">${book.Titulo}</h3>
+          <p class="text-sm text-slate-700 font-semibold">${book.Autor}</p>
+          <p class="text-xs text-slate-400">
             ${book.Editorial || "Editorial no especificada"} ${book.Ano ? `(${book.Ano})` : ""}
           </p>
 
-          <div class="pt-1.5 text-[11px] text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>Último inventario: <strong class="text-slate-700">${formatDate(book.Fecha_Ultimo_Inventario)}</strong></span>
-            <span>Estado: <strong class="text-emerald-700">${book.Estado || "Bueno"}</strong></span>
+          <div class="pt-2 text-xs text-slate-500 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 border-t border-slate-100">
+            <span>Último inventario: <strong class="text-slate-700 font-bold">${formatDate(book.Fecha_Ultimo_Inventario)}</strong></span>
+            <span>Estado: <strong class="text-emerald-700 font-bold">${book.Estado || "Bueno"}</strong></span>
           </div>
         </div>
       </div>
 
       <!-- Acciones Rápidas -->
-      <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+      <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2">
         <button
           onclick="quickReassignShelf('${book.Codigo_Interno}')"
-          class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 hover:underline active:scale-95 transition"
+          class="text-xs font-black text-brand-600 hover:text-brand-700 flex items-center gap-1.5 hover:underline active:scale-95 transition"
         >
-          <i data-lucide="shuffle" class="w-3.5 h-3.5"></i>
-          Cambiar de balda ahora
+          <i data-lucide="shuffle" class="w-4 h-4"></i>
+          Reubicar ejemplar en otra balda
         </button>
-        <span class="text-[10px] text-slate-400 font-medium">Registrado por: ${book.Registrado_Por || "Admin"}</span>
+        <span class="text-[11px] text-slate-400 font-medium">Registrado por: ${book.Registrado_Por || "Admin"}</span>
       </div>
 
     </div>
@@ -891,8 +912,8 @@ function createPlaceholderCoverSvg(title = "Libro", author = "") {
   const initials = (title.substring(0, 2) || "LB").toUpperCase();
   return `
     <div class="book-cover-placeholder w-full h-full">
-      <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs mb-1">${initials}</div>
-      <span class="text-[9px] font-bold leading-tight line-clamp-2 px-1">${title}</span>
+      <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm mb-1">${initials}</div>
+      <span class="text-[10px] font-bold leading-tight line-clamp-2 px-1">${title}</span>
     </div>
   `;
 }
@@ -1124,7 +1145,7 @@ function renderSessionAuditList() {
 
   if (AppState.sessionScannedBooks.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-6 text-slate-400 text-xs">
+      <div class="text-center py-8 text-slate-400 text-xs">
         Aún no has escaneado libros en esta sesión de auditoría.
       </div>
     `;
@@ -1467,7 +1488,7 @@ function renderSpacesList() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl">
+      <div class="col-span-full text-center py-8 text-slate-400 text-xs border border-dashed rounded-2xl bg-white/60">
         No hay baldas en esta zona. Pulsa "+ Balda" arriba para registrar una.
       </div>
     `;
@@ -1482,7 +1503,7 @@ function renderSpacesList() {
     const zoneClass = `zone-badge-${zoneCode}`;
 
     const card = document.createElement("div");
-    card.className = `p-3.5 bg-white hover:bg-slate-50/80 rounded-xl border ${isSelected ? 'border-brand-500 ring-2 ring-brand-200/70 shadow-xs' : 'border-slate-200'} flex items-center justify-between transition gap-3 shadow-2xs`;
+    card.className = `p-4 bg-white hover:bg-slate-50/80 rounded-2xl border ${isSelected ? 'border-brand-500 ring-2 ring-brand-200/70 shadow-xs' : 'border-slate-200'} flex items-center justify-between transition gap-3 shadow-2xs`;
 
     card.innerHTML = `
       <div class="flex items-center gap-3 min-w-0">

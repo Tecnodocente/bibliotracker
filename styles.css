@@ -1,5 +1,5 @@
 /* ==========================================================================
-   BiblioTracker IES - Rediseño Visual Premium (WOW Factor)
+   BiblioTracker IES - Dashboard Elegante y Responsive (PC + Móvil)
    ========================================================================== */
 
 /* Variables de Color y Tema */
@@ -13,20 +13,24 @@
   --accent-emerald: #10b981;
 }
 
-/* Atmósfera con Sutil Gradiente Mesh Ambiental */
+/* ==========================================================================
+   Atmósfera General con Malla y Gradiente de Biblioteca Digital
+   ========================================================================== */
 body {
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f8fafc;
+  background-color: #f1f5f9;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.07) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(219, 234, 254, 0.3) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.09) 0px, transparent 45%),
+    radial-gradient(at 50% 50%, rgba(14, 165, 233, 0.05) 0px, transparent 60%),
+    radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(203, 213, 225, 0.4) 0px, transparent 50%);
   background-attachment: fixed;
+  min-height: 100vh;
 }
 
 input, textarea, select {
@@ -35,8 +39,8 @@ input, textarea, select {
 
 /* Scrollbar fina y moderna */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -50,7 +54,60 @@ input, textarea, select {
 }
 
 /* ==========================================================================
-   Tarjetas Flotantes Estilo Modern SaaS
+   Cabecera Azul Noche / Índigo Profundo
+   ========================================================================== */
+.header-night {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.4);
+}
+
+.header-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.header-btn:active {
+  transform: scale(0.96);
+}
+
+/* Pestañas en Header para Desktop */
+.nav-desktop-btn {
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.75rem;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.nav-desktop-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-desktop-active {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* ==========================================================================
+   Tarjetas Flotantes Modern SaaS
    ========================================================================== */
 .card-saas {
   background: #ffffff;
@@ -61,7 +118,7 @@ input, textarea, select {
 }
 
 .card-saas:hover {
-  box-shadow: 0 14px 28px -5px rgba(30, 58, 138, 0.08), 0 10px 12px -6px rgba(30, 58, 138, 0.04);
+  box-shadow: 0 14px 30px -5px rgba(30, 58, 138, 0.08), 0 10px 12px -6px rgba(30, 58, 138, 0.04);
 }
 
 .card-kpi {
@@ -81,7 +138,7 @@ input, textarea, select {
    Botones con Gradientes y Micro-interacciones
    ========================================================================== */
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0284c7 100%);
   color: #ffffff;
   box-shadow: 0 4px 14px -1px rgba(37, 99, 235, 0.35);
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
@@ -118,22 +175,43 @@ input, textarea, select {
 }
 
 /* ==========================================================================
-   Frosted Glass Header & Navigation
+   Ficha de Libro y Portada 3D en Relieve
    ========================================================================== */
-.glass-header {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+.book-cover-3d {
+  perspective: 900px;
+  transform: rotateY(-5deg) rotateX(2deg);
+  box-shadow: -8px 12px 24px -4px rgba(15, 23, 42, 0.3), 0 4px 6px -2px rgba(15, 23, 42, 0.12);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  border-radius: 0.75rem;
+  overflow: hidden;
 }
 
+.book-cover-3d:hover {
+  transform: rotateY(0deg) scale(1.03);
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.32);
+}
+
+.book-cover-placeholder {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #4f46e5 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.75rem;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
+   Frosted Glass Bottom Navigation (Móvil)
+   ========================================================================== */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(226, 232, 240, 0.85);
-  box-shadow: 0 -4px 25px -3px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 -4px 25px -3px rgba(15, 23, 42, 0.08);
 }
 
 .nav-tab-active {
@@ -289,19 +367,6 @@ input, textarea, select {
   animation: scanSuccessGlow 0.65s ease-out;
 }
 
-/* Placeholder de portada elegante para libros antiguos/locales */
-.book-cover-placeholder {
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #4f46e5 100%);
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0.75rem;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.25);
-}
-
 /* Estilos de Insignias para las 17 Zonas Reales del Centro */
 .zone-badge-RV  { background-color: #fdf2f8; color: #9d174d; border-color: #fbcfe8; } /* Rincón Violeta */
 .zone-badge-CL  { background-color: #fff7ed; color: #c2410c; border-color: #ffedd5; } /* Canon Lector */
@@ -325,5 +390,5 @@ input, textarea, select {
 /* Barra de progreso interactiva con brillo */
 .progress-bar-fill {
   transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
 }
