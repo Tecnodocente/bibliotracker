@@ -1,12 +1,13 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.1.0 Producción)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.2.0 Producción)
  * ==============================================================================
- * Sistema de inventario, topografía real y catalogación de biblioteca escolar.
+ * Guardián de Red (Watchdog), Auto-Actualización Inteligente,
  * Autenticación estricta por PIN individual, 17 zonas temáticas y Google Sheets.
  */
 
-// URL real oficial del backend Google Apps Script del centro escolar
+// Versión del cliente y backend oficial del centro educativo
+const CURRENT_APP_VERSION = "3.2.0";
 const HARDCODED_GAS_URL = "https://script.google.com/macros/s/AKfycbwD4WmoyAnepRpu4Ei0gyAHw-HkEPzjOqmZKZxBu5L1Ex8hKN95IERz7tPqs--1_SJC/exec";
 
 // ==============================================================================
@@ -121,7 +122,10 @@ const AppState = {
   html5QrCodeScanner: null,
   isTorchOn: false,
   lastScannedCode: null,
-  lastScannedTime: 0
+  lastScannedTime: 0,
+  isOnline: true,
+  pendingOfflineResync: false,
+  updateBannerDismissed: false
 };
 
 // ==============================================================================
@@ -291,7 +295,210 @@ class FeedbackEngine {
 const feedback = new FeedbackEngine();
 
 // ==============================================================================
-// 5. PERSISTENCIA Y CLIENTE GOOGLE APPS SCRIPT
+// 5. GUARDIÁN DE RED Y AUTO-ACTUALIZACIÓN INTELIGENTE (WATCHDOG ENGINE)
+// ==============================================================================
+function initWatchdogAndAutoUpdate() {
+  window.addEventListener("online", () => handleNetworkOnline());
+  window.addEventListener("offline", () => handleNetworkOffline());
+
+  // Comprobación periódica ligera de red real cada 20 segundos
+  setInterval(() => {
+    checkRealInternetConnectivity();
+  }, 20000);
+
+  // Comprobación periódica de nueva versión cada 45 segundos
+  setInterval(() => {
+    checkForAppUpdates();
+  }, 45000);
+
+  // Primera verificación diferida al arrancar
+  setTimeout(() => {
+    checkRealInternetConnectivity();
+    checkForAppUpdates();
+  }, 3000);
+}
+
+async function checkRealInternetConnectivity() {
+  if (!navigator.onLine) {
+    handleNetworkOffline();
+    return;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+    const pingRes = await fetch(`./version.json?ping=${Date.now()}`, {
+      method: "GET",
+      cache: "no-store",
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (pingRes.ok) {
+      if (!AppState.isOnline) {
+        handleNetworkOnline();
+      }
+    } else {
+      handleNetworkOffline();
+    }
+  } catch (err) {
+    handleNetworkOffline();
+  }
+}
+
+function handleNetworkOffline() {
+  if (!AppState.isOnline) return;
+
+  AppState.isOnline = false;
+  AppState.pendingOfflineResync = true;
+
+  const blocker = document.getElementById("modal-offline-blocker");
+  const statusText = document.getElementById("offline-reconnect-status-text");
+
+  if (blocker) blocker.classList.remove("hidden");
+  if (statusText) statusText.textContent = "Esperando señal de red...";
+
+  updateConnectionStatusIndicator("offline");
+  feedback.beepError();
+
+  // Si la cámara del escáner estaba abierta, cerrarla de forma limpia
+  if (AppState.html5QrCodeScanner) {
+    stopScanner();
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function handleNetworkOnline() {
+  if (AppState.isOnline) return;
+
+  AppState.isOnline = true;
+  const blocker = document.getElementById("modal-offline-blocker");
+  if (blocker) blocker.classList.add("hidden");
+
+  updateConnectionStatusIndicator("connected");
+  feedback.doubleChime();
+  showToast("Conexión a la red restablecida", "success");
+
+  if (AppState.pendingOfflineResync) {
+    AppState.pendingOfflineResync = false;
+    syncAllDataFromGAS();
+  }
+}
+
+async function manualRetryNetworkCheck() {
+  const statusText = document.getElementById("offline-reconnect-status-text");
+  if (statusText) statusText.textContent = "Comprobando conexión...";
+
+  try {
+    const res = await fetch(`./version.json?retry=${Date.now()}`, {
+      method: "GET",
+      cache: "no-store"
+    });
+    if (res.ok) {
+      handleNetworkOnline();
+    } else {
+      throw new Error("Sin respuesta 200");
+    }
+  } catch (e) {
+    if (statusText) statusText.textContent = "Aún sin conexión a la red";
+    feedback.beepError();
+  }
+}
+
+function isVersionHigher(remoteV, localV) {
+  const parse = v => String(v).replace(/^v/i, "").split(".").map(n => parseInt(n, 10) || 0);
+  const r = parse(remoteV);
+  const l = parse(localV);
+
+  for (let i = 0; i < Math.max(r.length, l.length); i++) {
+    const rv = r[i] || 0;
+    const lv = l[i] || 0;
+    if (rv > lv) return true;
+    if (rv < lv) return false;
+  }
+  return false;
+}
+
+function isUserBusy() {
+  // 1. Escáner de cámara abierto
+  const scannerModal = document.getElementById("modal-scanner");
+  if (scannerModal && !scannerModal.classList.contains("hidden")) {
+    return true;
+  }
+
+  // 2. Modal de reasignación abierto
+  const reassignModal = document.getElementById("modal-reassign-shelf");
+  if (reassignModal && !reassignModal.classList.contains("hidden")) {
+    return true;
+  }
+
+  // 3. Usuario escribiendo en formulario de alta o entrada activa
+  const titleInput = document.getElementById("add-book-title");
+  if (titleInput && titleInput.value.trim().length > 0) {
+    return true;
+  }
+
+  const active = document.activeElement;
+  if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT")) {
+    if (active.value && active.value.trim().length > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function checkForAppUpdates() {
+  if (!navigator.onLine) return;
+
+  try {
+    const res = await fetch(`./version.json?t=${Date.now()}`, {
+      method: "GET",
+      cache: "no-store"
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    if (data && data.version && isVersionHigher(data.version, CURRENT_APP_VERSION)) {
+      console.log(`[Watchdog] Nueva versión detectada: v${data.version} (Actual: v${CURRENT_APP_VERSION})`);
+      
+      const banner = document.getElementById("banner-update-available");
+      const versionTag = document.getElementById("banner-update-version-tag");
+
+      if (versionTag) versionTag.textContent = `v${data.version}`;
+
+      if (isUserBusy()) {
+        // Mostrar banner no invasivo si el usuario está ocupado
+        if (banner && !AppState.updateBannerDismissed) {
+          banner.classList.remove("hidden");
+          if (window.lucide) lucide.createIcons();
+        }
+      } else {
+        // Si el usuario está inactivo, aplicar actualización de forma transparente
+        console.log("[Watchdog] Usuario inactivo. Recargando para aplicar nueva versión...");
+        window.location.reload();
+      }
+    }
+  } catch (err) {
+    console.debug("[Watchdog] Verificación de actualización diferida:", err);
+  }
+}
+
+function applyAppUpdateNow() {
+  window.location.reload();
+}
+
+function dismissUpdateBanner() {
+  const banner = document.getElementById("banner-update-available");
+  if (banner) banner.classList.add("hidden");
+  AppState.updateBannerDismissed = true;
+}
+
+// ==============================================================================
+// 6. PERSISTENCIA Y CLIENTE GOOGLE APPS SCRIPT
 // ==============================================================================
 function loadLocalState() {
   const savedUrl = localStorage.getItem("bibliotracker_gas_url");
@@ -337,6 +544,11 @@ async function callGAS(action, payload = {}) {
     return null;
   }
 
+  if (!navigator.onLine) {
+    handleNetworkOffline();
+    throw new Error("Dispositivo sin conexión");
+  }
+
   const url = AppState.gasUrl.trim();
   const callerName = AppState.currentUser ? AppState.currentUser.Nombre_Profesor : "";
   const callerPin = AppState.currentUser ? AppState.currentUser.PIN_Acceso : "";
@@ -365,6 +577,11 @@ async function callGAS(action, payload = {}) {
 
 async function syncAllDataFromGAS() {
   if (!AppState.gasUrl) return;
+  if (!navigator.onLine) {
+    handleNetworkOffline();
+    return;
+  }
+
   updateConnectionStatusIndicator("syncing");
 
   try {
@@ -405,8 +622,8 @@ function updateConnectionStatusIndicator(status) {
     dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping ring-2 ring-amber-400/40 flex-shrink-0";
     label.textContent = "Sincronizando...";
   } else if (status === "offline" || status === "demo") {
-    dot.className = "w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-400/40 flex-shrink-0";
-    label.textContent = "Modo Local";
+    dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-rose-500/40 flex-shrink-0";
+    label.textContent = "Sin Conexión";
   } else {
     dot.className = "w-2.5 h-2.5 rounded-full bg-rose-400 ring-2 ring-rose-400/40 flex-shrink-0";
     label.textContent = "Error Servidor";
@@ -414,7 +631,7 @@ function updateConnectionStatusIndicator(status) {
 }
 
 // ==============================================================================
-// 6. AUTENTICACIÓN ESTRICTA POR PIN INDIVIDUAL
+// 7. AUTENTICACIÓN ESTRICTA POR PIN INDIVIDUAL
 // ==============================================================================
 function initAuth() {
   if (AppState.currentUser) {
@@ -574,7 +791,7 @@ function confirmLogout() {
 }
 
 // ==============================================================================
-// 7. NAVEGACIÓN POR PESTAÑAS (TABS RESPONSIVE)
+// 8. NAVEGACIÓN POR PESTAÑAS (TABS RESPONSIVE)
 // ==============================================================================
 function switchTab(tabId) {
   const tabs = ["locator", "inventory", "add-book", "spaces"];
@@ -640,9 +857,14 @@ function switchTab(tabId) {
 }
 
 // ==============================================================================
-// 8. CÁMARA Y ESCÁNER DE CÓDIGOS DE BARRAS
+// 9. CÁMARA Y ESCÁNER DE CÓDIGOS DE BARRAS
 // ==============================================================================
 function startScanner(context) {
+  if (!navigator.onLine && !AppState.isOnline) {
+    handleNetworkOffline();
+    return;
+  }
+
   AppState.currentScannerContext = context;
   const modal = document.getElementById("modal-scanner");
   const titleEl = document.getElementById("scanner-title");
@@ -812,7 +1034,7 @@ function handleBarcodeScanned(code) {
 }
 
 // ==============================================================================
-// 9. MÓDULO 1: LOCALIZADOR DE LIBROS
+// 10. MÓDULO 1: LOCALIZADOR DE LIBROS
 // ==============================================================================
 function handleLocatorSearch(customQuery = null) {
   const input = document.getElementById("locator-search-input");
@@ -955,7 +1177,7 @@ function renderBookResult(book) {
 }
 
 // ==============================================================================
-// 10. REUBICACIÓN VISUAL DE BALDA (MODAL MODERNO)
+// 11. REUBICACIÓN VISUAL DE BALDA (MODAL MODERNO)
 // ==============================================================================
 function openReassignShelfModal(codigoInterno) {
   const book = AppState.books.find(b => b.Codigo_Interno === codigoInterno);
@@ -1053,7 +1275,7 @@ async function handleSaveReassignShelf() {
 }
 
 // ==============================================================================
-// 11. MÓDULO 2: MODO INVENTARIO MASIVO CON PROGRESO Y CELEBRACIÓN
+// 12. MÓDULO 2: MODO INVENTARIO MASIVO CON PROGRESO Y CELEBRACIÓN
 // ==============================================================================
 function selectActiveShelfByCode(barcode) {
   const cleanCode = barcode.trim().toUpperCase();
@@ -1316,7 +1538,7 @@ function clearSessionAuditHistory() {
 }
 
 // ==============================================================================
-// 12. MÓDULO 3: ALTA RÁPIDA Y MOTOR ESTRICTO DE CARÁTULAS
+// 13. MÓDULO 3: ALTA RÁPIDA Y MOTOR ESTRICTO DE CARÁTULAS
 // ==============================================================================
 async function fetchMetadataByISBN(isbnQuery = null) {
   const isbnInput = document.getElementById("add-book-isbn");
@@ -1553,7 +1775,7 @@ async function handleCreateBook(event) {
 }
 
 // ==============================================================================
-// 13. MÓDULO 4: TOPOGRAFÍA REAL Y GENERADOR DE ETIQUETAS PDF
+// 14. MÓDULO 4: TOPOGRAFÍA REAL Y GENERADOR DE ETIQUETAS PDF
 // ==============================================================================
 function populateZoneSelectors() {
   const filterSelect = document.getElementById("spaces-filter-cdu");
@@ -1929,7 +2151,7 @@ function generateSelectedShelvesPDF() {
 }
 
 // ==============================================================================
-// 14. AJUSTES, ESTADÍSTICAS Y UTILIDADES
+// 15. AJUSTES, ESTADÍSTICAS Y UTILIDADES
 // ==============================================================================
 function renderStats() {
   const totalBooksEl = document.getElementById("stat-total-books");
@@ -2047,7 +2269,7 @@ function exportBackupJSON() {
 }
 
 // ==============================================================================
-// 15. NOTIFICACIONES TOAST
+// 16. NOTIFICACIONES TOAST
 // ==============================================================================
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
@@ -2085,11 +2307,12 @@ function showToast(message, type = "info") {
 }
 
 // ==============================================================================
-// 16. INICIALIZACIÓN
+// 17. INICIALIZACIÓN
 // ==============================================================================
 window.addEventListener("DOMContentLoaded", () => {
   loadLocalState();
   initAuth();
+  initWatchdogAndAutoUpdate();
   populateZoneSelectors();
   populateShelfDropdowns();
   renderStats();

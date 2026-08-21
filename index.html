@@ -66,6 +66,34 @@
 <body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-600 selection:text-white pb-24 lg:pb-8 overflow-x-hidden w-full">
 
   <!-- ========================================================================= -->
+  <!-- BANNER FLOTANTE: ACTUALIZACIÓN INTELIGENTE DISPONIBLE (Z-INDEX 90) -->
+  <!-- ========================================================================= -->
+  <div id="banner-update-available" class="fixed top-3 inset-x-4 max-w-lg mx-auto z-[90] hidden">
+    <div class="banner-update-animate bg-slate-900/95 text-white border border-brand-500/60 rounded-2xl p-3.5 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 ring-1 ring-brand-400/30">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-md shadow-brand-500/30">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs font-black text-white flex items-center gap-1.5">
+            <span>Nueva versión disponible</span>
+            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.2.0</span>
+          </p>
+          <p class="text-[11px] text-slate-300 truncate">Actualiza para aplicar las últimas mejoras</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        <button onclick="applyAppUpdateNow()" class="btn-primary-gradient px-3 py-1.5 rounded-xl text-xs font-black shadow-xs active:scale-95 transition">
+          Actualizar
+        </button>
+        <button onclick="dismissUpdateBanner()" class="p-1.5 text-slate-400 hover:text-white rounded-lg transition" title="Descartar por ahora">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- BARRA SUPERIOR AZUL NOCHE / ÍNDIGO PROFUNDO (HEADER NIGHT) -->
   <!-- ========================================================================= -->
   <header class="sticky top-0 z-30 header-night px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 w-full">
@@ -80,7 +108,7 @@
           <div class="flex items-center gap-1.5">
             <h1 class="font-black text-sm sm:text-lg leading-tight tracking-tight text-white drop-shadow-xs truncate">BiblioTracker</h1>
             <span class="text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs flex-shrink-0">IES</span>
-            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.1.0</span>
+            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.2.0</span>
           </div>
           <p class="hidden sm:block text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
@@ -897,6 +925,39 @@
   </div>
 
   <!-- ========================================================================= -->
+  <!-- MODAL BLOQUEANTE POR DESCONEXIÓN: GUARDIÁN DE RED (Z-INDEX 100) -->
+  <!-- ========================================================================= -->
+  <div id="modal-offline-blocker" class="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border-rose-500/30 bg-slate-900/95 text-white">
+      
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 via-amber-600 to-rose-700 text-white flex items-center justify-center mx-auto shadow-xl shadow-rose-900/40 p-3 ring-2 ring-white/20 reconnect-pulse">
+        <i data-lucide="wifi-off" class="w-8 h-8 text-white"></i>
+      </div>
+
+      <div class="space-y-1.5">
+        <h3 class="text-lg font-black text-white tracking-tight">Sin Conexión a la Red</h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          El inventario se ha pausado para proteger la base de datos de Google Sheets. La aplicación se reanudará automáticamente al recuperar la señal.
+        </p>
+      </div>
+
+      <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center gap-2 text-amber-300 text-xs font-semibold">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+        <span id="offline-reconnect-status-text">Reconectando...</span>
+      </div>
+
+      <button
+        onclick="manualRetryNetworkCheck()"
+        class="w-full py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs rounded-xl transition active:scale-97 flex items-center justify-center gap-2"
+      >
+        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+        Reintentar conexión ahora
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- MODAL: AUTENTICACIÓN ESTRICTA POR PIN INDIVIDUAL -->
   <!-- ========================================================================= -->
   <div id="modal-login" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
@@ -1171,15 +1232,13 @@
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (!refreshing) {
             refreshing = true;
-            console.log('[PWA] Nueva versión activada. Recargando automáticamente...');
-            window.location.reload();
+            console.log('[PWA] Nueva versión activada por controllerchange.');
           }
         });
 
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
-            console.log('[PWA] Service Worker registrado con éxito');
-            // Forzar búsqueda de versión fresca en cada arranque
+            console.log('[PWA] Service Worker registrado v3.2.0');
             reg.update();
 
             reg.onupdatefound = () => {
@@ -1187,7 +1246,7 @@
               if (installingWorker) {
                 installingWorker.onstatechange = () => {
                   if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[PWA] Nueva versión lista, enviando skipWaiting');
+                    console.log('[PWA] Nueva versión lista en caché');
                     installingWorker.postMessage({ action: 'skipWaiting' });
                   }
                 };

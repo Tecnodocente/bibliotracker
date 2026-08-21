@@ -1,12 +1,11 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Service Worker V3.1.0 (Network-First Strategy)
+ * BIBLIOTRACKER IES - Service Worker V3.2.0 (Watchdog & Network-First)
  * ==============================================================================
- * Estrategia Network-First: Red primero con respaldo a caché offline.
- * Auto-actualización transparente, eliminación de cachés obsoletas y control instantáneo.
+ * Estrategia Network-First con soporte para Guardián de red y comprobación de versión.
  */
 
-const CACHE_NAME = 'bibliotracker-v3.1.0';
+const CACHE_NAME = 'bibliotracker-v3.2.0';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -22,7 +21,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-cacheados los assets estáticos esenciales v3.1.0');
+      console.log('[SW] Pre-cacheados los assets estáticos esenciales v3.2.0');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
@@ -41,7 +40,7 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
-      console.log('[SW] Tomando el control de todos los clientes activos');
+      console.log('[SW] Tomando el control de todos los clientes activos v3.2.0');
       return self.clients.claim();
     })
   );
@@ -60,10 +59,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = event.request.url;
 
-  // Para peticiones directas de API externas / Google Apps Script: no cachear
-  if (url.includes('script.google.com') || url.includes('googleapis.com') || url.includes('openlibrary.org')) {
+  // Exclusiones estrictas: version.json, Google Apps Script, APIs externas nunca se cachean
+  if (url.includes('version.json') || url.includes('script.google.com') || url.includes('googleapis.com') || url.includes('openlibrary.org')) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(event.request))
     );
     return;
   }
@@ -72,7 +71,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Si la red responde correctamente, actualizamos la copia en caché dinámica
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -87,7 +85,6 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          // Para navegación de páginas completas, devolver index.html de la caché
           if (event.request.mode === 'navigate' || event.request.destination === 'document') {
             return caches.match('./index.html');
           }

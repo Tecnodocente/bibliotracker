@@ -359,6 +359,38 @@ input, textarea, select {
   animation: slideDownToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Banner de Actualización Flotante */
+@keyframes slideDownBanner {
+  from {
+    transform: translate(-50%, -120%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.banner-update-animate {
+  animation: slideDownBanner 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Pulso de reconexión */
+@keyframes pulseReconnect {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.96);
+  }
+}
+
+.reconnect-pulse {
+  animation: pulseReconnect 2s infinite ease-in-out;
+}
+
 /* Feedback visual de pulso */
 @keyframes scanSuccessGlow {
   0% {
