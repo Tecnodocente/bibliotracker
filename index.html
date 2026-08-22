@@ -77,7 +77,7 @@
         <div class="min-w-0">
           <p class="text-xs font-black text-white flex items-center gap-1.5">
             <span>Nueva versión disponible</span>
-            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.2.0</span>
+            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.3.0</span>
           </p>
           <p class="text-[11px] text-slate-300 truncate">Actualiza para aplicar las últimas mejoras</p>
         </div>
@@ -108,7 +108,7 @@
           <div class="flex items-center gap-1.5">
             <h1 class="font-black text-sm sm:text-lg leading-tight tracking-tight text-white drop-shadow-xs truncate">BiblioTracker</h1>
             <span class="text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs flex-shrink-0">IES</span>
-            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.2.0</span>
+            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.3.0</span>
           </div>
           <p class="hidden sm:block text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
@@ -162,8 +162,8 @@
           <span id="status-label" class="hidden md:inline text-[11px]">Google Sheets</span>
         </button>
 
-        <!-- Perfil de Profesor Activo (Avatar circular en móvil para no desbordar) -->
-        <div id="user-profile-badge" class="flex items-center gap-1.5 sm:gap-2 header-btn rounded-full p-1 sm:py-1 sm:pl-1.5 sm:pr-3 shadow-xs">
+        <!-- Perfil de Profesor Activo (Interactivo: Clic para cambiar PIN de acceso) -->
+        <button id="user-profile-badge" onclick="openChangePinModal()" title="Clic para cambiar tu PIN de acceso" class="flex items-center gap-1.5 sm:gap-2 header-btn rounded-full p-1 sm:py-1 sm:pl-1.5 sm:pr-3 shadow-xs cursor-pointer hover:ring-2 hover:ring-indigo-400/40 active:scale-95 transition">
           <div id="user-avatar" class="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 text-slate-900 text-[11px] font-black flex items-center justify-center shadow-inner flex-shrink-0">
             P
           </div>
@@ -171,7 +171,7 @@
             <p id="user-display-name" class="text-xs font-bold leading-none text-white truncate max-w-[90px] sm:max-w-[140px]">Profesor</p>
             <p id="user-role-badge" class="text-[9px] font-black leading-tight uppercase text-indigo-300">Admin</p>
           </div>
-        </div>
+        </button>
 
         <!-- Botón Cerrar Sesión (Siempre visible) -->
         <button onclick="confirmLogout()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition active:scale-95 shadow-xs flex-shrink-0" title="Cerrar Sesión">
@@ -807,6 +807,105 @@
   </nav>
 
   <!-- ========================================================================= -->
+  <!-- MODAL: CAMBIO DE PIN DE ACCESO POR PROFESOR -->
+  <!-- ========================================================================= -->
+  <div id="modal-change-pin" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="card-saas max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2 text-left">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/25">
+            <i data-lucide="key-round" class="w-4 h-4 text-white"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-900 leading-tight">Cambiar PIN de Acceso</h3>
+            <p id="change-pin-teacher-name" class="text-[11px] text-slate-500 font-semibold truncate max-w-[180px]">Profesor Activo</p>
+          </div>
+        </div>
+        <button onclick="closeChangePinModal()" class="text-slate-400 hover:text-slate-600 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleChangePinSubmit(event)" class="space-y-3.5 text-left text-xs">
+        
+        <div>
+          <label class="block font-black uppercase tracking-wider text-slate-700 mb-1">
+            Nuevo PIN de Acceso (4 a 6 dígitos) *
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="new-pin-input"
+              maxlength="8"
+              placeholder="Introduce tu nuevo PIN"
+              class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono text-center tracking-widest focus:ring-2 focus:ring-brand-500 focus:bg-white transition shadow-inner"
+              required
+            />
+            <button
+              type="button"
+              id="btn-toggle-new-pin"
+              onclick="togglePinFieldVisibility('new-pin-input', 'btn-toggle-new-pin')"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+              title="Mostrar / Ocultar PIN"
+            >
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-black uppercase tracking-wider text-slate-700 mb-1">
+            Confirmar Nuevo PIN *
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="confirm-new-pin-input"
+              maxlength="8"
+              placeholder="Repite el nuevo PIN"
+              class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono text-center tracking-widest focus:ring-2 focus:ring-brand-500 focus:bg-white transition shadow-inner"
+              required
+            />
+            <button
+              type="button"
+              id="btn-toggle-confirm-pin"
+              onclick="togglePinFieldVisibility('confirm-new-pin-input', 'btn-toggle-confirm-pin')"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+              title="Mostrar / Ocultar PIN"
+            >
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="change-pin-error-msg" class="text-[11px] font-bold text-rose-600 hidden text-center p-2 rounded-lg bg-rose-50 border border-rose-200">
+          <!-- Mensaje de error de validación -->
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button
+            type="button"
+            onclick="closeChangePinModal()"
+            class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition active:scale-97"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            id="btn-save-new-pin"
+            class="btn-primary-gradient flex-1 py-3 font-black rounded-xl transition flex items-center justify-center gap-1.5"
+          >
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Guardar PIN</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- MODAL: REUBICAR EJEMPLAR EN OTRA BALDA (VISUAL) -->
   <!-- ========================================================================= -->
   <div id="modal-reassign-shelf" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
@@ -1238,7 +1337,7 @@
 
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
-            console.log('[PWA] Service Worker registrado v3.2.0');
+            console.log('[PWA] Service Worker registrado v3.3.0');
             reg.update();
 
             reg.onupdatefound = () => {

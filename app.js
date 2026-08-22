@@ -1,13 +1,13 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.2.0 Producción)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.3.0 Producción)
  * ==============================================================================
  * Guardián de Red (Watchdog), Auto-Actualización Inteligente,
- * Autenticación estricta por PIN individual, 17 zonas temáticas y Google Sheets.
+ * Cambio de PIN de Acceso por Profesor, 17 Zonas Temáticas y Google Sheets.
  */
 
 // Versión del cliente y backend oficial del centro educativo
-const CURRENT_APP_VERSION = "3.2.0";
+const CURRENT_APP_VERSION = "3.3.0";
 const HARDCODED_GAS_URL = "https://script.google.com/macros/s/AKfycbwD4WmoyAnepRpu4Ei0gyAHw-HkEPzjOqmZKZxBu5L1Ex8hKN95IERz7tPqs--1_SJC/exec";
 
 // ==============================================================================
@@ -434,7 +434,13 @@ function isUserBusy() {
     return true;
   }
 
-  // 3. Usuario escribiendo en formulario de alta o entrada activa
+  // 3. Modal de cambio de PIN abierto
+  const changePinModal = document.getElementById("modal-change-pin");
+  if (changePinModal && !changePinModal.classList.contains("hidden")) {
+    return true;
+  }
+
+  // 4. Usuario escribiendo en formulario de alta o entrada activa
   const titleInput = document.getElementById("add-book-title");
   if (titleInput && titleInput.value.trim().length > 0) {
     return true;
@@ -791,7 +797,158 @@ function confirmLogout() {
 }
 
 // ==============================================================================
-// 8. NAVEGACIÓN POR PESTAÑAS (TABS RESPONSIVE)
+// 8. CAMBIO DE PIN DE ACCESO POR PROFESOR
+// ==============================================================================
+function openChangePinModal() {
+  if (!AppState.currentUser) {
+    showLoginModal();
+    return;
+  }
+
+  const modal = document.getElementById("modal-change-pin");
+  const teacherNameEl = document.getElementById("change-pin-teacher-name");
+  const newPinInput = document.getElementById("new-pin-input");
+  const confirmPinInput = document.getElementById("confirm-new-pin-input");
+  const errorMsg = document.getElementById("change-pin-error-msg");
+
+  if (!modal) return;
+
+  if (teacherNameEl) {
+    teacherNameEl.textContent = AppState.currentUser.Nombre_Profesor;
+  }
+
+  if (newPinInput) {
+    newPinInput.value = "";
+    newPinInput.type = "password";
+  }
+  if (confirmPinInput) {
+    confirmPinInput.value = "";
+    confirmPinInput.type = "password";
+  }
+  if (errorMsg) {
+    errorMsg.classList.add("hidden");
+    errorMsg.textContent = "";
+  }
+
+  const btn1 = document.getElementById("btn-toggle-new-pin");
+  const btn2 = document.getElementById("btn-toggle-confirm-pin");
+  if (btn1) btn1.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+  if (btn2) btn2.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+
+  modal.classList.remove("hidden");
+  if (window.lucide) lucide.createIcons();
+  if (newPinInput) setTimeout(() => newPinInput.focus(), 150);
+}
+
+function closeChangePinModal() {
+  const modal = document.getElementById("modal-change-pin");
+  if (modal) modal.classList.add("hidden");
+}
+
+function togglePinFieldVisibility(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  if (!input || !btn) return;
+
+  if (input.type === "password") {
+    input.type = "text";
+    btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+  } else {
+    input.type = "password";
+    btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+async function handleChangePinSubmit(event) {
+  if (event) event.preventDefault();
+
+  if (!AppState.currentUser) {
+    showToast("Debes iniciar sesión primero", "warning");
+    return;
+  }
+
+  const newPinInput = document.getElementById("new-pin-input");
+  const confirmPinInput = document.getElementById("confirm-new-pin-input");
+  const errorMsg = document.getElementById("change-pin-error-msg");
+  const saveBtn = document.getElementById("btn-save-new-pin");
+
+  const newPin = (newPinInput ? newPinInput.value : "").trim();
+  const confirmPin = (confirmPinInput ? confirmPinInput.value : "").trim();
+
+  const showError = (msg) => {
+    if (errorMsg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.remove("hidden");
+    }
+    feedback.beepError();
+  };
+
+  if (!newPin || !confirmPin) {
+    showError("Por favor, completa ambos campos de PIN");
+    return;
+  }
+
+  if (newPin.length < 4) {
+    showError("El nuevo PIN debe tener al menos 4 caracteres");
+    return;
+  }
+
+  if (newPin !== confirmPin) {
+    showError("Los PINs introducidos no coinciden");
+    return;
+  }
+
+  if (errorMsg) errorMsg.classList.add("hidden");
+
+  // Estado de carga en el botón
+  const originalBtnContent = saveBtn ? saveBtn.innerHTML : "";
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Guardando...</span>';
+    if (window.lucide) lucide.createIcons();
+  }
+
+  try {
+    // 1. Actualizar estado local
+    AppState.currentUser.PIN_Acceso = newPin;
+    const userInList = AppState.users.find(u => 
+      String(u.Nombre_Profesor || "").trim().toLowerCase() === String(AppState.currentUser.Nombre_Profesor || "").trim().toLowerCase()
+    );
+    if (userInList) {
+      userInList.PIN_Acceso = newPin;
+    }
+    saveLocalState();
+
+    // 2. Enviar a Google Apps Script
+    if (AppState.gasUrl && navigator.onLine) {
+      const res = await callGAS("updateUserPin", {
+        profesorName: AppState.currentUser.Nombre_Profesor,
+        newPin: newPin
+      });
+      if (res && res.status === "error") {
+        throw new Error(res.message || "Error en el servidor");
+      }
+    }
+
+    closeChangePinModal();
+    feedback.doubleChime();
+    showToast("PIN de acceso actualizado correctamente", "success");
+  } catch (err) {
+    console.error("Error al actualizar PIN:", err);
+    showToast("PIN actualizado en este dispositivo (pendiente de sincronizar con Google Sheets)", "info");
+    closeChangePinModal();
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalBtnContent;
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+}
+
+// ==============================================================================
+// 9. NAVEGACIÓN POR PESTAÑAS (TABS RESPONSIVE)
 // ==============================================================================
 function switchTab(tabId) {
   const tabs = ["locator", "inventory", "add-book", "spaces"];
@@ -857,7 +1014,7 @@ function switchTab(tabId) {
 }
 
 // ==============================================================================
-// 9. CÁMARA Y ESCÁNER DE CÓDIGOS DE BARRAS
+// 10. CÁMARA Y ESCÁNER DE CÓDIGOS DE BARRAS
 // ==============================================================================
 function startScanner(context) {
   if (!navigator.onLine && !AppState.isOnline) {
@@ -1034,7 +1191,7 @@ function handleBarcodeScanned(code) {
 }
 
 // ==============================================================================
-// 10. MÓDULO 1: LOCALIZADOR DE LIBROS
+// 11. MÓDULO 1: LOCALIZADOR DE LIBROS
 // ==============================================================================
 function handleLocatorSearch(customQuery = null) {
   const input = document.getElementById("locator-search-input");
@@ -1177,7 +1334,7 @@ function renderBookResult(book) {
 }
 
 // ==============================================================================
-// 11. REUBICACIÓN VISUAL DE BALDA (MODAL MODERNO)
+// 12. REUBICACIÓN VISUAL DE BALDA (MODAL MODERNO)
 // ==============================================================================
 function openReassignShelfModal(codigoInterno) {
   const book = AppState.books.find(b => b.Codigo_Interno === codigoInterno);
@@ -1275,7 +1432,7 @@ async function handleSaveReassignShelf() {
 }
 
 // ==============================================================================
-// 12. MÓDULO 2: MODO INVENTARIO MASIVO CON PROGRESO Y CELEBRACIÓN
+// 13. MÓDULO 2: MODO INVENTARIO MASIVO CON PROGRESO Y CELEBRACIÓN
 // ==============================================================================
 function selectActiveShelfByCode(barcode) {
   const cleanCode = barcode.trim().toUpperCase();
@@ -1538,7 +1695,7 @@ function clearSessionAuditHistory() {
 }
 
 // ==============================================================================
-// 13. MÓDULO 3: ALTA RÁPIDA Y MOTOR ESTRICTO DE CARÁTULAS
+// 14. MÓDULO 3: ALTA RÁPIDA Y MOTOR ESTRICTO DE CARÁTULAS
 // ==============================================================================
 async function fetchMetadataByISBN(isbnQuery = null) {
   const isbnInput = document.getElementById("add-book-isbn");
@@ -1775,7 +1932,7 @@ async function handleCreateBook(event) {
 }
 
 // ==============================================================================
-// 14. MÓDULO 4: TOPOGRAFÍA REAL Y GENERADOR DE ETIQUETAS PDF
+// 15. MÓDULO 4: TOPOGRAFÍA REAL Y GENERADOR DE ETIQUETAS PDF
 // ==============================================================================
 function populateZoneSelectors() {
   const filterSelect = document.getElementById("spaces-filter-cdu");
@@ -2151,7 +2308,7 @@ function generateSelectedShelvesPDF() {
 }
 
 // ==============================================================================
-// 15. AJUSTES, ESTADÍSTICAS Y UTILIDADES
+// 16. AJUSTES, ESTADÍSTICAS Y UTILIDADES
 // ==============================================================================
 function renderStats() {
   const totalBooksEl = document.getElementById("stat-total-books");
@@ -2269,7 +2426,7 @@ function exportBackupJSON() {
 }
 
 // ==============================================================================
-// 16. NOTIFICACIONES TOAST
+// 17. NOTIFICACIONES TOAST
 // ==============================================================================
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
@@ -2307,7 +2464,7 @@ function showToast(message, type = "info") {
 }
 
 // ==============================================================================
-// 17. INICIALIZACIÓN
+// 18. INICIALIZACIÓN
 // ==============================================================================
 window.addEventListener("DOMContentLoaded", () => {
   loadLocalState();
