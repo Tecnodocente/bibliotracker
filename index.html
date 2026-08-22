@@ -77,7 +77,7 @@
         <div class="min-w-0">
           <p class="text-xs font-black text-white flex items-center gap-1.5">
             <span>Nueva versión disponible</span>
-            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.4.0</span>
+            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.4.1</span>
           </p>
           <p class="text-[11px] text-slate-300 truncate">Actualiza para aplicar las últimas mejoras</p>
         </div>
@@ -108,7 +108,7 @@
           <div class="flex items-center gap-1.5">
             <h1 class="font-black text-sm sm:text-lg leading-tight tracking-tight text-white drop-shadow-xs truncate">BiblioTracker</h1>
             <span class="text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs flex-shrink-0">IES</span>
-            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.4.0</span>
+            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.4.1</span>
           </div>
           <p class="hidden sm:block text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
@@ -615,7 +615,7 @@
                     <input
                       type="text"
                       id="add-book-internal-code"
-                      placeholder="ej. SEN-00109"
+                      placeholder="Ej: 004874A (Pegatina física Séneca)"
                       class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono font-medium focus:ring-2 focus:ring-brand-500 transition"
                       required
                     />
@@ -628,6 +628,7 @@
                       <i data-lucide="scan-line" class="w-4 h-4"></i>
                     </button>
                   </div>
+                  <p class="text-[11px] text-slate-500 mt-1">Campo obligatorio: introduce el código de barras impreso en el libro</p>
                 </div>
 
                 <div>
@@ -1342,7 +1343,7 @@
 
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
-            console.log('[PWA] Service Worker registrado v3.4.0');
+            console.log('[PWA] Service Worker registrado v3.4.1');
             reg.update();
 
             reg.onupdatefound = () => {

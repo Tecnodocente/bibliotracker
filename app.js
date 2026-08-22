@@ -1,14 +1,15 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.4.0 Producción)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.4.1 Producción)
  * ==============================================================================
  * Guardián de Red (Watchdog), Auto-Actualización Inteligente,
+ * Entrada Manual Obligatoria de Código Interno (Sin Autocompletar),
  * Selector Multi-Ejemplar en Localizador, Filtro de Portadas 1x1,
  * Cambio de PIN Docente, 17 Zonas Temáticas y Google Sheets.
  */
 
 // Versión del cliente y backend oficial del centro educativo
-const CURRENT_APP_VERSION = "3.4.0";
+const CURRENT_APP_VERSION = "3.4.1";
 const HARDCODED_GAS_URL = "https://script.google.com/macros/s/AKfycbwD4WmoyAnepRpu4Ei0gyAHw-HkEPzjOqmZKZxBu5L1Ex8hKN95IERz7tPqs--1_SJC/exec";
 
 // ==============================================================================
@@ -1058,7 +1059,7 @@ function startScanner(context) {
   if (titleEl) titleEl.textContent = titles[context] || "Escaneando código...";
   if (manualInput) {
     manualInput.value = "";
-    manualInput.placeholder = context === "shelf" ? "ej. LOC-08-01" : "ej. SEN-00101 o 97884...";
+    manualInput.placeholder = context === "shelf" ? "ej. LOC-08-01" : "ej. 004874A o 97884...";
   }
 
   modal.classList.remove("hidden");
@@ -1203,7 +1204,10 @@ function handleBarcodeScanned(code) {
     stopScanner();
     feedback.beepSuccess();
     const input = document.getElementById("add-book-internal-code");
-    if (input) input.value = code;
+    if (input) {
+      input.value = code;
+      input.classList.remove("border-rose-500", "ring-2", "ring-rose-200");
+    }
     showToast(`Código asignado: ${code}`, "success");
   }
 }
@@ -1943,6 +1947,7 @@ function populateAddBookForm(data) {
   const coverPreview = document.getElementById("add-book-cover-preview");
   const coverUrlInput = document.getElementById("add-book-cover-url");
   const statusEl = document.getElementById("isbn-enrich-status");
+  const internalInput = document.getElementById("add-book-internal-code");
 
   if (titleInput) titleInput.value = data.title;
   if (authorInput) authorInput.value = data.authors;
@@ -1958,10 +1963,9 @@ function populateAddBookForm(data) {
     statusEl.innerHTML = `<span class="text-emerald-600 font-black flex items-center gap-1.5">✓ Metadatos recuperados de ${escapeHtml(data.source)}</span>`;
   }
 
-  const internalInput = document.getElementById("add-book-internal-code");
-  if (internalInput && !internalInput.value) {
-    const nextNum = AppState.books.length + 101;
-    internalInput.value = `SEN-00${nextNum}`;
+  // Desactivado cualquier autocompletado de código interno: el docente debe introducirlo manualmente
+  if (internalInput) {
+    internalInput.classList.remove("border-rose-500", "ring-2", "ring-rose-200");
   }
 
   if (window.lucide) lucide.createIcons();
@@ -2010,17 +2014,42 @@ async function handleCreateBook(event) {
   const publisher = document.getElementById("add-book-publisher").value.trim();
   const year = document.getElementById("add-book-year").value.trim();
   const state = document.getElementById("add-book-state").value;
-  const internalCode = document.getElementById("add-book-internal-code").value.trim();
+  const internalCodeInput = document.getElementById("add-book-internal-code");
+  const internalCode = (internalCodeInput ? internalCodeInput.value : "").trim();
   const spaceId = document.getElementById("add-book-space-id").value;
   const coverUrl = document.getElementById("add-book-cover-url").value.trim();
 
-  if (!internalCode || !spaceId || !title || !author) {
-    showToast("Por favor, completa los campos obligatorios (*)", "warning");
+  // Validación estricta: El Código Interno de Séneca no puede estar vacío
+  if (!internalCode) {
+    if (internalCodeInput) {
+      internalCodeInput.classList.add("border-rose-500", "ring-2", "ring-rose-200");
+      internalCodeInput.focus();
+    }
+    showToast("Debes introducir el Código Interno de Séneca de la pegatina", "warning");
+    feedback.beepError();
+    return;
+  } else {
+    if (internalCodeInput) {
+      internalCodeInput.classList.remove("border-rose-500", "ring-2", "ring-rose-200");
+    }
+  }
+
+  if (!spaceId || !title || !author) {
+    showToast("Por favor, completa todos los campos obligatorios (*)", "warning");
+    feedback.beepError();
     return;
   }
 
-  if (AppState.books.some(b => b.Codigo_Interno.toUpperCase() === internalCode.toUpperCase())) {
-    showToast(`El código interno '${internalCode}' ya existe`, "error");
+  // Verificación de duplicados en el inventario activo
+  const existingBook = AppState.books.find(b => String(b.Codigo_Interno || "").trim().toUpperCase() === internalCode.toUpperCase());
+  if (existingBook) {
+    if (internalCodeInput) {
+      internalCodeInput.classList.add("border-rose-500", "ring-2", "ring-rose-200");
+      internalCodeInput.focus();
+    }
+    const currentSpace = AppState.spaces.find(s => s.ID_Espacio === existingBook.ID_Espacio_Actual);
+    const locDesc = currentSpace ? `${currentSpace.Modulo_Numero} - ${currentSpace.Balda_Numero}` : "Ubicación desconocida";
+    showToast(`El código '${internalCode}' ya está registrado ('${existingBook.Titulo.substring(0, 20)}...' en ${locDesc}). Usa el Localizador para reubicarlo.`, "error");
     feedback.beepError();
     return;
   }
@@ -2049,6 +2078,10 @@ async function handleCreateBook(event) {
   callGAS("createBook", { book: newBook }).catch(() => {});
 
   document.getElementById("form-add-book").reset();
+  if (internalCodeInput) {
+    internalCodeInput.value = "";
+    internalCodeInput.classList.remove("border-rose-500", "ring-2", "ring-rose-200");
+  }
   const coverPreview = document.getElementById("add-book-cover-preview");
   if (coverPreview) {
     coverPreview.innerHTML = `
