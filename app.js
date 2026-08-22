@@ -1,15 +1,16 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.4.1 Producción)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.4.2 Producción)
  * ==============================================================================
  * Guardián de Red (Watchdog), Auto-Actualización Inteligente,
+ * Normalización de Códigos Séneca con Prefijo de Centro (11 a 7 caracteres),
  * Entrada Manual Obligatoria de Código Interno (Sin Autocompletar),
  * Selector Multi-Ejemplar en Localizador, Filtro de Portadas 1x1,
  * Cambio de PIN Docente, 17 Zonas Temáticas y Google Sheets.
  */
 
 // Versión del cliente y backend oficial del centro educativo
-const CURRENT_APP_VERSION = "3.4.1";
+const CURRENT_APP_VERSION = "3.4.2";
 const HARDCODED_GAS_URL = "https://script.google.com/macros/s/AKfycbwD4WmoyAnepRpu4Ei0gyAHw-HkEPzjOqmZKZxBu5L1Ex8hKN95IERz7tPqs--1_SJC/exec";
 
 // ==============================================================================
@@ -53,7 +54,7 @@ const DEFAULT_DEMO_DATA = {
   ],
   books: [
     {
-      Codigo_Interno: "SEN-00101",
+      Codigo_Interno: "004113L",
       ISBN: "9788437604947",
       Titulo: "Don Quijote de la Mancha",
       Autor: "Miguel de Cervantes Saavedra",
@@ -66,7 +67,7 @@ const DEFAULT_DEMO_DATA = {
       Registrado_Por: "D. Manuel García (Coordinador)"
     },
     {
-      Codigo_Interno: "SEN-00102",
+      Codigo_Interno: "004114X",
       ISBN: "9788466338141",
       Titulo: "Cien años de soledad",
       Autor: "Gabriel García Márquez",
@@ -79,7 +80,7 @@ const DEFAULT_DEMO_DATA = {
       Registrado_Por: "D. Manuel García (Coordinador)"
     },
     {
-      Codigo_Interno: "SEN-00103",
+      Codigo_Interno: "004115P",
       ISBN: "9788420674209",
       Titulo: "El banquete",
       Autor: "Platón",
@@ -92,7 +93,7 @@ const DEFAULT_DEMO_DATA = {
       Registrado_Por: "Dña. Carmen López (Dpto. Lengua)"
     },
     {
-      Codigo_Interno: "SEN-00104",
+      Codigo_Interno: "004116Q",
       ISBN: "9788497592208",
       Titulo: "Una habitación propia",
       Autor: "Virginia Woolf",
@@ -152,6 +153,37 @@ function normalizeSearchString(str) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+/**
+ * Normaliza códigos de barras de Séneca recortando prefijos de centro de 4 dígitos
+ * Ejemplos: '2395004113L' -> '004113L', 'SEN-004113L' -> '004113L'
+ * Preserva intactos ISBNs comerciales (978... / 979...) y códigos de balda (LOC-...)
+ */
+function normalizeBarcodeQuery(rawCode) {
+  if (!rawCode) return "";
+  let clean = String(rawCode).trim().toUpperCase();
+
+  // Si tiene prefijo 'SEN-' o 'SEN ', retirarlo
+  if (clean.startsWith("SEN-") || clean.startsWith("SEN_") || clean.startsWith("SEN ")) {
+    clean = clean.replace(/^SEN[-_\s]+/, "");
+  }
+
+  // Si es un ISBN estándar de 13 dígitos que empieza por 978 o 979, no recortar
+  if ((clean.startsWith("978") || clean.startsWith("979")) && clean.length === 13) {
+    return clean;
+  }
+
+  // Si es un código largo de Séneca con prefijo de centro (longitud 10-11 caracteres, ej: 2395004113L)
+  if ((clean.length === 10 || clean.length === 11) && /^[0-9]+[A-Z0-9]$/.test(clean)) {
+    // Si los últimos 7 caracteres cumplen el patrón estándar Séneca (6 dígitos + 1 letra/dígito, ej: 004113L)
+    const last7 = clean.slice(-7);
+    if (/^\d{6}[A-Z0-9]$/.test(last7)) {
+      return last7;
+    }
+  }
+
+  return clean;
 }
 
 function renderBookCoverMarkup(url, title, author) {
@@ -1059,7 +1091,7 @@ function startScanner(context) {
   if (titleEl) titleEl.textContent = titles[context] || "Escaneando código...";
   if (manualInput) {
     manualInput.value = "";
-    manualInput.placeholder = context === "shelf" ? "ej. LOC-08-01" : "ej. 004874A o 97884...";
+    manualInput.placeholder = context === "shelf" ? "ej. LOC-08-01" : "ej. 004113L o 97884...";
   }
 
   modal.classList.remove("hidden");
@@ -1184,9 +1216,10 @@ function handleBarcodeScanned(code) {
   if (ctx === "locator") {
     stopScanner();
     feedback.beepSuccess();
+    const normCode = normalizeBarcodeQuery(code);
     const input = document.getElementById("locator-search-input");
-    if (input) input.value = code;
-    handleLocatorSearch(code);
+    if (input) input.value = normCode;
+    handleLocatorSearch(normCode);
   } else if (ctx === "shelf") {
     stopScanner();
     selectActiveShelfByCode(code);
@@ -1203,12 +1236,13 @@ function handleBarcodeScanned(code) {
   } else if (ctx === "add-internal") {
     stopScanner();
     feedback.beepSuccess();
+    const normCode = normalizeBarcodeQuery(code);
     const input = document.getElementById("add-book-internal-code");
     if (input) {
-      input.value = code;
+      input.value = normCode;
       input.classList.remove("border-rose-500", "ring-2", "ring-rose-200");
     }
-    showToast(`Código asignado: ${code}`, "success");
+    showToast(`Código asignado: ${normCode}`, "success");
   }
 }
 
@@ -1218,28 +1252,36 @@ function handleBarcodeScanned(code) {
 function handleLocatorSearch(customQuery = null) {
   const input = document.getElementById("locator-search-input");
   const clearBtn = document.getElementById("btn-clear-locator-input");
-  const query = (customQuery !== null ? customQuery : (input ? input.value : "")).trim();
+  const rawQuery = (customQuery !== null ? customQuery : (input ? input.value : "")).trim();
 
   if (clearBtn) {
-    clearBtn.className = query ? "absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600" : "hidden";
+    clearBtn.className = rawQuery ? "absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600" : "hidden";
   }
 
-  if (!query) {
+  if (!rawQuery) {
     showToast("Introduce o escanea un código para buscar", "info");
     return;
   }
 
-  const cleanQueryCode = query.toLowerCase().replace(/[-\s]/g, "");
-  const normQueryText = normalizeSearchString(query);
+  const normBarcode = normalizeBarcodeQuery(rawQuery);
+  const cleanQueryCode = rawQuery.toLowerCase().replace(/[-\s]/g, "");
+  const cleanNormBarcode = normBarcode.toLowerCase().replace(/[-\s]/g, "");
+  const normQueryText = normalizeSearchString(rawQuery);
 
   const matchedBooks = AppState.books.filter(b => {
-    const bCode = String(b.Codigo_Interno || "").toLowerCase().replace(/[-\s]/g, "");
+    const rawBCode = String(b.Codigo_Interno || "").trim();
+    const bCode = rawBCode.toLowerCase().replace(/[-\s]/g, "");
+    const normBCode = normalizeBarcodeQuery(rawBCode).toLowerCase().replace(/[-\s]/g, "");
     const bIsbn = String(b.ISBN || "").toLowerCase().replace(/[-\s]/g, "");
     const bTitleNorm = normalizeSearchString(b.Titulo || "");
     const bAuthorNorm = normalizeSearchString(b.Autor || "");
 
     return bCode === cleanQueryCode || 
+           bCode === cleanNormBarcode ||
+           normBCode === cleanQueryCode ||
+           normBCode === cleanNormBarcode ||
            bIsbn === cleanQueryCode || 
+           bIsbn === cleanNormBarcode ||
            bTitleNorm.includes(normQueryText) ||
            (normQueryText.length > 3 && bAuthorNorm.includes(normQueryText));
   });
@@ -1267,7 +1309,7 @@ function handleLocatorSearch(customQuery = null) {
     AppState.currentMatches = [];
     AppState.selectedMatchCode = null;
     feedback.beepError();
-    showToast(`No se encontró ningún ejemplar con '${query}'`, "warning");
+    showToast(`No se encontró ningún ejemplar con '${rawQuery}'`, "warning");
     if (resultCard) resultCard.classList.add("hidden");
     if (emptyState) emptyState.classList.remove("hidden");
     if (multiContainer) multiContainer.classList.add("hidden");
@@ -1720,11 +1762,23 @@ async function processBookInventoryScan(barcode) {
     return;
   }
 
-  const cleanCode = barcode.trim().toLowerCase().replace(/[-\s]/g, "");
+  const rawCode = barcode.trim();
+  const normBarcode = normalizeBarcodeQuery(rawCode);
+  const cleanRawCode = rawCode.toLowerCase().replace(/[-\s]/g, "");
+  const cleanNormCode = normBarcode.toLowerCase().replace(/[-\s]/g, "");
+
   let book = AppState.books.find(b => {
-    const bCode = String(b.Codigo_Interno || "").toLowerCase().replace(/[-\s]/g, "");
+    const rawBCode = String(b.Codigo_Interno || "").trim();
+    const bCode = rawBCode.toLowerCase().replace(/[-\s]/g, "");
+    const normBCode = normalizeBarcodeQuery(rawBCode).toLowerCase().replace(/[-\s]/g, "");
     const bIsbn = String(b.ISBN || "").toLowerCase().replace(/[-\s]/g, "");
-    return bCode === cleanCode || bIsbn === cleanCode;
+
+    return bCode === cleanRawCode || 
+           bCode === cleanNormCode || 
+           normBCode === cleanRawCode || 
+           normBCode === cleanNormCode || 
+           bIsbn === cleanRawCode || 
+           bIsbn === cleanNormCode;
   });
 
   const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
@@ -1741,7 +1795,7 @@ async function processBookInventoryScan(barcode) {
       status: "synced"
     });
 
-    showToast(`✓ ${book.Titulo.substring(0, 22)}... reubicado`, "success");
+    showToast(`✓ ${book.Titulo.substring(0, 22)}... (${book.Codigo_Interno}) reubicado`, "success");
 
     callGAS("updateBookLocation", {
       codigoInterno: book.Codigo_Interno,
@@ -1751,9 +1805,9 @@ async function processBookInventoryScan(barcode) {
     }).catch(() => {});
   } else {
     feedback.beepError();
-    showToast(`Código '${barcode}' no registrado en la biblioteca`, "warning");
+    showToast(`Código '${normBarcode}' no registrado en la biblioteca`, "warning");
     AppState.sessionScannedBooks.unshift({
-      unregisteredCode: barcode,
+      unregisteredCode: normBarcode,
       timestamp: nowStr,
       status: "unregistered"
     });
@@ -2015,7 +2069,8 @@ async function handleCreateBook(event) {
   const year = document.getElementById("add-book-year").value.trim();
   const state = document.getElementById("add-book-state").value;
   const internalCodeInput = document.getElementById("add-book-internal-code");
-  const internalCode = (internalCodeInput ? internalCodeInput.value : "").trim();
+  const rawInternalCode = (internalCodeInput ? internalCodeInput.value : "").trim();
+  const internalCode = normalizeBarcodeQuery(rawInternalCode);
   const spaceId = document.getElementById("add-book-space-id").value;
   const coverUrl = document.getElementById("add-book-cover-url").value.trim();
 
@@ -2030,6 +2085,7 @@ async function handleCreateBook(event) {
     return;
   } else {
     if (internalCodeInput) {
+      internalCodeInput.value = internalCode;
       internalCodeInput.classList.remove("border-rose-500", "ring-2", "ring-rose-200");
     }
   }
@@ -2041,7 +2097,12 @@ async function handleCreateBook(event) {
   }
 
   // Verificación de duplicados en el inventario activo
-  const existingBook = AppState.books.find(b => String(b.Codigo_Interno || "").trim().toUpperCase() === internalCode.toUpperCase());
+  const existingBook = AppState.books.find(b => {
+    const bCode = String(b.Codigo_Interno || "").trim().toUpperCase();
+    const normBCode = normalizeBarcodeQuery(bCode);
+    return bCode === internalCode.toUpperCase() || normBCode === internalCode.toUpperCase();
+  });
+
   if (existingBook) {
     if (internalCodeInput) {
       internalCodeInput.classList.add("border-rose-500", "ring-2", "ring-rose-200");

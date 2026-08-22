@@ -77,7 +77,7 @@
         <div class="min-w-0">
           <p class="text-xs font-black text-white flex items-center gap-1.5">
             <span>Nueva versión disponible</span>
-            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.4.1</span>
+            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.4.2</span>
           </p>
           <p class="text-[11px] text-slate-300 truncate">Actualiza para aplicar las últimas mejoras</p>
         </div>
@@ -108,7 +108,7 @@
           <div class="flex items-center gap-1.5">
             <h1 class="font-black text-sm sm:text-lg leading-tight tracking-tight text-white drop-shadow-xs truncate">BiblioTracker</h1>
             <span class="text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs flex-shrink-0">IES</span>
-            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.4.1</span>
+            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.4.2</span>
           </div>
           <p class="hidden sm:block text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
@@ -244,7 +244,7 @@
             <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
               <span class="flex items-center gap-1.5">
                 <i data-lucide="info" class="w-4 h-4 text-brand-600 flex-shrink-0"></i>
-                Busca por código de barras Séneca (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono font-bold">SEN-00101</code>) o ISBN comercial.
+                Busca por código Séneca (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono font-bold">004113L</code> o con prefijo) o ISBN comercial.
               </span>
               <button onclick="handleLocatorSearch()" class="font-bold text-brand-600 hover:text-brand-700 transition">Buscar ahora</button>
             </div>
@@ -1343,7 +1343,7 @@
 
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
-            console.log('[PWA] Service Worker registrado v3.4.1');
+            console.log('[PWA] Service Worker registrado v3.4.2');
             reg.update();
 
             reg.onupdatefound = () => {
