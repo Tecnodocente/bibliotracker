@@ -1,11 +1,11 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Service Worker V3.4.2 (Watchdog & Network-First)
+ * BIBLIOTRACKER IES - Service Worker V3.4.3 (Watchdog & Network-First)
  * ==============================================================================
  * Estrategia Network-First con soporte para Guardián de red y comprobación de versión.
  */
 
-const CACHE_NAME = 'bibliotracker-v3.4.2';
+const CACHE_NAME = 'bibliotracker-v3.4.3';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -21,7 +21,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-cacheados los assets estáticos esenciales v3.4.2');
+      console.log('[SW] Pre-cacheados los assets estáticos esenciales v3.4.3');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
@@ -40,7 +40,7 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
-      console.log('[SW] Tomando el control de todos los clientes activos v3.4.2');
+      console.log('[SW] Tomando el control de todos los clientes activos v3.4.3');
       return self.clients.claim();
     })
   );

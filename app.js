@@ -10,7 +10,7 @@
  */
 
 // Versión del cliente y backend oficial del centro educativo
-const CURRENT_APP_VERSION = "3.4.2";
+const CURRENT_APP_VERSION = "3.4.3";
 const HARDCODED_GAS_URL = "https://script.google.com/macros/s/AKfycbwD4WmoyAnepRpu4Ei0gyAHw-HkEPzjOqmZKZxBu5L1Ex8hKN95IERz7tPqs--1_SJC/exec";
 
 // ==============================================================================
@@ -2673,10 +2673,10 @@ function showToast(message, type = "info") {
     info: "ℹ"
   };
 
-  toast.className = `toast-animate px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-bold flex items-center gap-2.5 pointer-events-auto backdrop-blur-md ${bgStyles[type] || bgStyles.info}`;
+  toast.className = `toast-animate px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold flex items-center gap-2.5 pointer-events-auto backdrop-blur-md max-w-full w-auto text-left break-words ${bgStyles[type] || bgStyles.info}`;
   toast.innerHTML = `
-    <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">${icons[type] || "•"}</span>
-    <span>${escapeHtml(message)}</span>
+    <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px] flex-shrink-0">${icons[type] || "•"}</span>
+    <span class="leading-snug">${escapeHtml(message)}</span>
   `;
 
   container.appendChild(toast);

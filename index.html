@@ -68,7 +68,7 @@
   <!-- ========================================================================= -->
   <!-- BANNER FLOTANTE: ACTUALIZACIÓN INTELIGENTE DISPONIBLE (Z-INDEX 90) -->
   <!-- ========================================================================= -->
-  <div id="banner-update-available" class="fixed top-3 inset-x-4 max-w-lg mx-auto z-[90] hidden">
+  <div id="banner-update-available" class="fixed top-3 left-1/2 -translate-x-1/2 w-full max-w-[92vw] sm:max-w-lg z-[90] hidden">
     <div class="banner-update-animate bg-slate-900/95 text-white border border-brand-500/60 rounded-2xl p-3.5 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 ring-1 ring-brand-400/30">
       <div class="flex items-center gap-3 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-md shadow-brand-500/30">
@@ -77,7 +77,7 @@
         <div class="min-w-0">
           <p class="text-xs font-black text-white flex items-center gap-1.5">
             <span>Nueva versión disponible</span>
-            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.4.2</span>
+            <span id="banner-update-version-tag" class="text-[9px] font-mono bg-brand-500/30 text-brand-200 px-1.5 py-0.5 rounded border border-brand-400/40">v3.4.3</span>
           </p>
           <p class="text-[11px] text-slate-300 truncate">Actualiza para aplicar las últimas mejoras</p>
         </div>
@@ -108,7 +108,7 @@
           <div class="flex items-center gap-1.5">
             <h1 class="font-black text-sm sm:text-lg leading-tight tracking-tight text-white drop-shadow-xs truncate">BiblioTracker</h1>
             <span class="text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shadow-xs flex-shrink-0">IES</span>
-            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.4.2</span>
+            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700">v3.4.3</span>
           </div>
           <p class="hidden sm:block text-[11px] text-slate-300/80 font-medium leading-none mt-0.5">Inventario, Topografía y Catálogo Escolar</p>
         </div>
@@ -929,7 +929,7 @@
       <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
         <p id="reassign-book-title" class="text-sm font-black text-slate-900 line-clamp-1">Don Quijote de la Mancha</p>
         <div class="flex items-center gap-2 text-xs text-slate-500">
-          <span id="reassign-book-code" class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border text-emerald-700">SEN-00101</span>
+          <span id="reassign-book-code" class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border text-emerald-700">004113L</span>
           <span>•</span>
           <span id="reassign-current-location" class="text-slate-600 font-medium">Ubicación actual: Módulo 8 - Balda 1</span>
         </div>
@@ -1322,8 +1322,8 @@
     </div>
   </div>
 
-  <!-- Contenedor de Alertas Toast -->
-  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-full max-w-sm px-4"></div>
+  <!-- Contenedor de Alertas Toast Centrado y Responsive -->
+  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-full max-w-[92vw] sm:max-w-md px-2"></div>
 
   <!-- Script Principal de la Aplicación -->
   <script src="./app.js"></script>
@@ -1343,7 +1343,7 @@
 
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
-            console.log('[PWA] Service Worker registrado v3.4.2');
+            console.log('[PWA] Service Worker registrado v3.4.3');
             reg.update();
 
             reg.onupdatefound = () => {

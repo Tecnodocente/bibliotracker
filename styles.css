@@ -343,36 +343,36 @@ input, textarea, select {
   }
 }
 
-/* Toast de notificación animado */
+/* Toast de notificación animado centrado */
 @keyframes slideDownToast {
   from {
-    transform: translate(-50%, -120%);
+    transform: translateY(-12px) scale(0.96);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, 0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
 .toast-animate {
-  animation: slideDownToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideDownToast 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Banner de Actualización Flotante */
+/* Banner de Actualización Flotante centrado */
 @keyframes slideDownBanner {
   from {
-    transform: translate(-50%, -120%);
+    transform: translateY(-16px) scale(0.97);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, 0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
 .banner-update-animate {
-  animation: slideDownBanner 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideDownBanner 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Pulso de reconexión */
