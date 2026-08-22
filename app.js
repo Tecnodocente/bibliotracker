@@ -1,13 +1,14 @@
 /**
  * ==============================================================================
- * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.3.0 Producción)
+ * BIBLIOTRACKER IES - Lógica de Cliente PWA (v3.4.0 Producción)
  * ==============================================================================
  * Guardián de Red (Watchdog), Auto-Actualización Inteligente,
- * Cambio de PIN de Acceso por Profesor, 17 Zonas Temáticas y Google Sheets.
+ * Selector Multi-Ejemplar en Localizador, Filtro de Portadas 1x1,
+ * Cambio de PIN Docente, 17 Zonas Temáticas y Google Sheets.
  */
 
 // Versión del cliente y backend oficial del centro educativo
-const CURRENT_APP_VERSION = "3.3.0";
+const CURRENT_APP_VERSION = "3.4.0";
 const HARDCODED_GAS_URL = "https://script.google.com/macros/s/AKfycbwD4WmoyAnepRpu4Ei0gyAHw-HkEPzjOqmZKZxBu5L1Ex8hKN95IERz7tPqs--1_SJC/exec";
 
 // ==============================================================================
@@ -114,6 +115,8 @@ const AppState = {
   zones: [],
   spaces: [],
   books: [],
+  currentMatches: [],
+  selectedMatchCode: null,
   activeShelf: null,
   sessionScannedBooks: [],
   gasUrl: "",
@@ -129,7 +132,7 @@ const AppState = {
 };
 
 // ==============================================================================
-// 3. UTILIDADES DE ESCAPADO Y RENDERIZADO SEGURO
+// 3. UTILIDADES DE ESCAPADO, NORMALIZACIÓN Y RENDERIZADO SEGURO
 // ==============================================================================
 function escapeHtml(str) {
   if (str === null || str === undefined) return "";
@@ -141,6 +144,15 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
+function normalizeSearchString(str) {
+  if (!str) return "";
+  return String(str)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function renderBookCoverMarkup(url, title, author) {
   const cleanTitle = escapeHtml(title || "Libro");
   const initials = escapeHtml(((title || "LB").substring(0, 2)).toUpperCase());
@@ -149,7 +161,13 @@ function renderBookCoverMarkup(url, title, author) {
     const cleanUrl = escapeHtml(url.trim());
     return `
       <div class="relative w-full h-full">
-        <img src="${cleanUrl}" alt="Portada" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
+        <img 
+          src="${cleanUrl}" 
+          alt="Portada" 
+          class="w-full h-full object-cover" 
+          onload="if(this.naturalWidth<=2 || this.naturalHeight<=2){ this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); }"
+          onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" 
+        />
         <div class="hidden book-cover-placeholder w-full h-full absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
           <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-black text-sm mb-1 text-white">${initials}</div>
           <span class="text-[10px] font-bold leading-tight line-clamp-2 px-1 text-white">${cleanTitle}</span>
@@ -1191,7 +1209,7 @@ function handleBarcodeScanned(code) {
 }
 
 // ==============================================================================
-// 11. MÓDULO 1: LOCALIZADOR DE LIBROS
+// 11. MÓDULO 1: LOCALIZADOR DE LIBROS Y SELECTOR MULTI-EJEMPLAR
 // ==============================================================================
 function handleLocatorSearch(customQuery = null) {
   const input = document.getElementById("locator-search-input");
@@ -1207,28 +1225,131 @@ function handleLocatorSearch(customQuery = null) {
     return;
   }
 
-  const cleanQuery = query.toLowerCase().replace(/[-\s]/g, "");
+  const cleanQueryCode = query.toLowerCase().replace(/[-\s]/g, "");
+  const normQueryText = normalizeSearchString(query);
 
-  const matchedBook = AppState.books.find(b => {
+  const matchedBooks = AppState.books.filter(b => {
     const bCode = String(b.Codigo_Interno || "").toLowerCase().replace(/[-\s]/g, "");
     const bIsbn = String(b.ISBN || "").toLowerCase().replace(/[-\s]/g, "");
-    const bTitle = String(b.Titulo || "").toLowerCase();
-    return bCode === cleanQuery || bIsbn === cleanQuery || bTitle.includes(query.toLowerCase());
+    const bTitleNorm = normalizeSearchString(b.Titulo || "");
+    const bAuthorNorm = normalizeSearchString(b.Autor || "");
+
+    return bCode === cleanQueryCode || 
+           bIsbn === cleanQueryCode || 
+           bTitleNorm.includes(normQueryText) ||
+           (normQueryText.length > 3 && bAuthorNorm.includes(normQueryText));
   });
 
   const resultCard = document.getElementById("locator-result-card");
   const emptyState = document.getElementById("locator-empty-state");
+  const multiContainer = document.getElementById("multi-copies-container");
 
-  if (matchedBook) {
+  if (matchedBooks.length > 0) {
+    AppState.currentMatches = matchedBooks;
+    AppState.selectedMatchCode = matchedBooks[0].Codigo_Interno;
+
     feedback.beepSuccess();
-    renderBookResult(matchedBook);
+    renderBookResult(matchedBooks[0]);
     if (resultCard) resultCard.classList.remove("hidden");
     if (emptyState) emptyState.classList.add("hidden");
+
+    if (matchedBooks.length > 1) {
+      renderMultiCopiesPanel(matchedBooks, matchedBooks[0].Codigo_Interno);
+      if (multiContainer) multiContainer.classList.remove("hidden");
+    } else {
+      if (multiContainer) multiContainer.classList.add("hidden");
+    }
   } else {
+    AppState.currentMatches = [];
+    AppState.selectedMatchCode = null;
     feedback.beepError();
     showToast(`No se encontró ningún ejemplar con '${query}'`, "warning");
     if (resultCard) resultCard.classList.add("hidden");
     if (emptyState) emptyState.classList.remove("hidden");
+    if (multiContainer) multiContainer.classList.add("hidden");
+  }
+}
+
+function renderMultiCopiesPanel(books, activeCode) {
+  const container = document.getElementById("multi-copies-container");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="card-saas p-4 sm:p-5 space-y-3 border-brand-200/80 shadow-md">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
+          <i data-lucide="copy" class="w-4 h-4 text-brand-600"></i>
+          <span>Ejemplares registrados (${books.length} copias)</span>
+        </h3>
+        <span class="text-[10px] font-mono font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">
+          Mismo Título / ISBN
+        </span>
+      </div>
+      <p class="text-[11px] text-slate-500 leading-snug">
+        Haz clic en cualquier copia para ver su balda exacta y estado físico:
+      </p>
+      <div class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+        ${books.map((b) => {
+          const isActive = b.Codigo_Interno === activeCode;
+          const space = AppState.spaces.find(s => s.ID_Espacio === b.ID_Espacio_Actual);
+          const locationText = space ? `${space.Modulo_Numero} — ${space.Balda_Numero}` : "Pendiente ubicar";
+          const isAvailable = String(b.Estado || "").toLowerCase().includes("disponible");
+          
+          return `
+            <button
+              type="button"
+              onclick="selectBookCopy('${escapeHtml(b.Codigo_Interno)}')"
+              class="w-full p-3 rounded-xl border text-left transition active:scale-98 cursor-pointer flex items-center justify-between gap-2.5 ${
+                isActive
+                  ? 'bg-gradient-to-r from-brand-50 via-indigo-50/60 to-white border-brand-500 ring-2 ring-brand-400/40 shadow-xs'
+                  : 'bg-white hover:bg-slate-50 border-slate-200 shadow-2xs'
+              }"
+            >
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-black px-2 py-0.5 rounded-md ${
+                    isActive ? 'bg-brand-600 text-white shadow-2xs' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                  }">
+                    ${escapeHtml(b.Codigo_Interno)}
+                  </span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    isAvailable ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  }">
+                    ${escapeHtml(b.Estado || "Bueno")}
+                  </span>
+                </div>
+                <p class="text-xs font-bold text-slate-800 mt-1 truncate flex items-center gap-1">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-600 flex-shrink-0"></i>
+                  <span>${escapeHtml(locationText)}</span>
+                </p>
+              </div>
+              <div class="flex items-center text-slate-400 ${isActive ? 'text-brand-600' : ''}">
+                <i data-lucide="${isActive ? 'check-circle-2' : 'chevron-right'}" class="w-4 h-4"></i>
+              </div>
+            </button>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function selectBookCopy(codigoInterno) {
+  if (!AppState.currentMatches || AppState.currentMatches.length === 0) return;
+
+  const targetBook = AppState.currentMatches.find(b => b.Codigo_Interno === codigoInterno);
+  if (!targetBook) return;
+
+  AppState.selectedMatchCode = codigoInterno;
+  feedback.beepSuccess();
+  renderBookResult(targetBook);
+  renderMultiCopiesPanel(AppState.currentMatches, codigoInterno);
+
+  const resultCard = document.getElementById("locator-result-card");
+  if (resultCard) {
+    resultCard.classList.remove("hidden");
   }
 }
 
@@ -1237,11 +1358,16 @@ function clearLocatorInput() {
   const clearBtn = document.getElementById("btn-clear-locator-input");
   const resultCard = document.getElementById("locator-result-card");
   const emptyState = document.getElementById("locator-empty-state");
+  const multiContainer = document.getElementById("multi-copies-container");
 
   if (input) input.value = "";
   if (clearBtn) clearBtn.classList.add("hidden");
   if (resultCard) resultCard.classList.add("hidden");
   if (emptyState) emptyState.classList.remove("hidden");
+  if (multiContainer) multiContainer.classList.add("hidden");
+
+  AppState.currentMatches = [];
+  AppState.selectedMatchCode = null;
 }
 
 function renderBookResult(book) {
@@ -1315,14 +1441,14 @@ function renderBookResult(book) {
         </div>
       </div>
 
-      <!-- Acciones Rápidas -->
+      <!-- Acciones Rápidas (Reubica estrictamente esta copia) -->
       <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2">
         <button
           onclick="openReassignShelfModal('${escapeHtml(book.Codigo_Interno)}')"
           class="text-xs font-black text-brand-600 hover:text-brand-700 flex items-center gap-1.5 hover:underline active:scale-95 transition"
         >
           <i data-lucide="shuffle" class="w-4 h-4"></i>
-          Reubicar ejemplar en otra balda
+          Reubicar ejemplar (<span class="font-mono">${escapeHtml(book.Codigo_Interno)}</span>)
         </button>
         <span class="text-[11px] text-slate-400 font-medium">Registrado por: ${escapeHtml(book.Registrado_Por || "Admin")}</span>
       </div>
@@ -1420,8 +1546,14 @@ async function handleSaveReassignShelf() {
 
   closeReassignShelfModal();
   renderBookResult(book);
+
+  // Actualizar lista de copias si existen coincidencias activas
+  if (AppState.currentMatches && AppState.currentMatches.length > 1) {
+    renderMultiCopiesPanel(AppState.currentMatches, book.Codigo_Interno);
+  }
+
   renderStats();
-  showToast(`✓ '${book.Titulo.substring(0, 20)}...' reubicado en ${matchedSpace.Modulo_Numero} - ${matchedSpace.Balda_Numero}`, "success");
+  showToast(`✓ '${book.Titulo.substring(0, 20)}...' (${book.Codigo_Interno}) reubicado en ${matchedSpace.Modulo_Numero} - ${matchedSpace.Balda_Numero}`, "success");
 
   callGAS("updateBookLocation", {
     codigoInterno: book.Codigo_Interno,
@@ -1792,7 +1924,7 @@ function testImageUrl(url) {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
-      if (img.naturalWidth > 1 && img.naturalHeight > 1) {
+      if (img.naturalWidth > 2 && img.naturalHeight > 2) {
         resolve(true);
       } else {
         resolve(false);
